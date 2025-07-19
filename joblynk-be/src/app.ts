@@ -1,9 +1,11 @@
 import express from "express";
 import cookieParser from "cookie-parser";
-import userRouter from "./routes/user.routes";
-import authRouter from "./routes/auth.routes";
 import morgan from "morgan";
 import cors from "cors";
+
+import jobRouter from "./routes/jobs.routes";
+import userRouter from "./routes/user.routes";
+import authRouter from "./routes/auth.routes";
 
 const app = express();
 const port = 8080;
@@ -21,6 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
+app.use("/api/jobs", jobRouter);
 
 app.get("/health", (req, res) => {
   res.status(200).send("API is healthy");

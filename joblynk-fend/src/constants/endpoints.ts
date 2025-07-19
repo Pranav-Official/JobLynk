@@ -5,4 +5,6 @@ export const AUTH_LOGIN_ENDPOINT = '/auth/login'
 export const AUTH_LOGOUT_ENDPOINT = '/auth/logout'
 export const AUTH_CHECK_ENDPOINT = '/auth/is-logged-in'
 
+export const JOBS_LIST_ENDPOINT = '/jobs'
+
 export const getFullApiUrl = (endpoint: string) => `${API_BASE_URL}${endpoint}`

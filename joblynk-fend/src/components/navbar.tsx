@@ -4,7 +4,7 @@ import {
   AUTH_LOGIN_ENDPOINT,
   AUTH_LOGOUT_ENDPOINT,
   getFullApiUrl,
-} from '../constants/api'
+} from '../constants/endpoints'
 import useStore from '../store'
 
 export default function NavBar() {
@@ -26,7 +26,7 @@ export default function NavBar() {
   }
 
   return (
-    <header className="p-4 flex items-center justify-between bg-gray-100 text-gray-800 z-10 drop-shadow-lg">
+    <header className="fixed top-0 w-full z-50 p-4 flex items-center justify-between bg-gray-100 text-gray-800 drop-shadow-lg">
       <nav className="flex items-center">
         <div className="px-4 font-bold text-xl">
           <div
