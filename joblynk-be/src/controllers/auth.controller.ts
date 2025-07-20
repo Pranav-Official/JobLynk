@@ -62,12 +62,15 @@ class AuthController {
         sessionData: req.cookies["wos-session"],
         cookiePassword: process.env.WORKOS_COOKIE_PASSWORD || "",
       });
-      console.log("session", session);
       const result = await session.authenticate();
-      console.log("authenticated", result.authenticated);
 
       if (result.authenticated) {
-        res.json({ isLoggedIn: true });
+        res.json({
+          isLoggedIn: true,
+          data: {
+            userDetails: result.user,
+          },
+        });
         return;
       }
 

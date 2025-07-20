@@ -54,10 +54,17 @@ class JobController {
       const page = parseInt(req.query.page as string, 10) || 1;
       const pageSize = parseInt(req.query.pageSize as string, 10) || 10;
       const search = req.query.search as string | undefined;
-      const status = req.query.status as JobStatus | undefined;
+      const location = req.query.location as string | undefined;
+      const jobType = req.query.jobType as string | undefined;
 
       const { jobs, total, currentPage, totalPages } =
-        await jobService.getPaginatedJobs(page, pageSize, search, status);
+        await jobService.getPaginatedJobs(
+          page,
+          pageSize,
+          search,
+          location,
+          jobType,
+        );
 
       res.status(200).json({
         data: {

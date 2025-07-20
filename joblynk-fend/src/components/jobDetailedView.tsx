@@ -248,7 +248,7 @@ const JobDetailedView: React.FC<JobDetailedViewProps> = ({ job }) => {
           }`}
         >
           {detailedJob.easyApply ? 'Easy Apply' : 'Apply Now'}
-          {detailedJob.applyUrl && (
+          {detailedJob.applyUrl && !detailedJob.easyApply && (
             <FontAwesomeIcon icon={faExternalLinkAlt} className="w-4 h-4" />
           )}
         </button>

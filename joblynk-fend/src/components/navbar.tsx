@@ -5,7 +5,7 @@ import {
   AUTH_LOGOUT_ENDPOINT,
   getFullApiUrl,
 } from '../constants/endpoints'
-import useStore from '../store'
+import useStore from '../stores/authStore'
 
 export default function NavBar() {
   const navigate = useNavigate()

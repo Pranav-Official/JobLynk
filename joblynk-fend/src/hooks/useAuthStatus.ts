@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import useStore from '@/store'
-import { AUTH_CHECK_ENDPOINT, getFullApiUrl } from '@/constants/api'
+import useStore from '@/stores/authStore'
+import { AUTH_CHECK_ENDPOINT, getFullApiUrl } from '@/constants/endpoints'
 
 interface AuthStatus {
   isLoggedIn: boolean

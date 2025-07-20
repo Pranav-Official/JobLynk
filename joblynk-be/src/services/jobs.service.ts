@@ -38,6 +38,7 @@ class JobService {
     pageSize: number = 10,
     search?: string,
     location?: string,
+    jobType?: string,
   ): Promise<{
     jobs: JobAttributes[];
     total: number;
@@ -51,8 +52,15 @@ class JobService {
       where[Op.or] = [
         { title: { [Op.iLike]: `%${search}%` } },
         { descriptionMarkdown: { [Op.iLike]: `%${search}%` } },
-        { location: { [Op.iLike]: `%${search}%` } },
       ];
+    }
+
+    if (location) {
+      where.location = { [Op.iLike]: `%${location}%` };
+    }
+
+    if (jobType) {
+      where.jobType = { [Op.eq]: jobType };
     }
 
     where.status = { [Op.eq]: JobStatus.ACTIVE };

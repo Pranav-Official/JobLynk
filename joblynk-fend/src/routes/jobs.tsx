@@ -1,35 +1,93 @@
+import { useEffect, useState } from 'react'
+import { z } from 'zod'
+import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faChevronLeft,
   faChevronRight,
   faSearch,
+  faTimes,
 } from '@fortawesome/free-solid-svg-icons'
-import { useQuery } from '@tanstack/react-query'
-import type { JobItem, JobResponse } from '@/constants/types/job'
+import type { JobItem } from '@/constants/types/job'
 import JobCard from '@/components/jobCard'
 import JobDetailedView from '@/components/jobDetailedView'
-import api from '@/utils/api'
-import { JOBS_LIST_ENDPOINT } from '@/constants/endpoints'
+import { JobType } from '@/constants/enums'
+import { getJobs } from '@/services/jobs'
+
+const searchUrlQuerySchema = z.object({
+  searchQuery: z.string().min(0).max(100).optional(),
+  location: z.string().min(0).max(100).optional(),
+  jobType: z.string().min(0).max(100).optional(),
+})
 
 export const Route = createFileRoute('/jobs')({
   component: RouteComponent,
+  validateSearch: searchUrlQuerySchema,
 })
 
-const getJobs = async (page: number = 1): Promise<JobResponse> => {
-  const apiResponse = await api.get(`${JOBS_LIST_ENDPOINT}?page=${page}`)
-  return apiResponse.data.data
+type SearchParams = {
+  searchQuery: string
+  location: string
+  jobType: string
 }
 
 function RouteComponent() {
+  const navigate = Route.useNavigate()
+  const updateSearch = ({ searchQuery, location, jobType }: SearchParams) => {
+    navigate({
+      search: (prev) => ({
+        ...prev,
+        searchQuery,
+        location,
+        jobType,
+      }),
+    })
+  }
+  const { searchQuery, location, jobType } = Route.useSearch()
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    formState: { errors, isDirty },
+  } = useForm<SearchParams>({
+    defaultValues: {
+      searchQuery: '',
+      location: '',
+      jobType: '',
+    },
+  })
   const [selectedJob, setSelectedJob] = useState<JobItem | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
-
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['jobs', currentPage],
-    queryFn: () => getJobs(currentPage),
+    queryKey: ['jobs', searchQuery, location, jobType, currentPage],
+    queryFn: () =>
+      getJobs(searchQuery || '', location || '', jobType || '', currentPage),
   })
+
+  useEffect(() => {
+    setValue('searchQuery', searchQuery || '')
+    setValue('location', location || '')
+    setValue('jobType', jobType || '')
+  }, [searchQuery, location, jobType, setValue])
+
+  const onSubmit = (searchparams: SearchParams) => {
+    updateSearch(searchparams)
+    setSelectedJob(null)
+  }
+
+  const resetSearch = () => {
+    setCurrentPage(1)
+    updateSearch({
+      searchQuery: '',
+      location: '',
+      jobType: '',
+    })
+    reset()
+    setSelectedJob(null)
+  }
 
   const handleJobSelect = (job: JobItem) => {
     setSelectedJob(job)
@@ -37,6 +95,7 @@ function RouteComponent() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
+
     // Reset selected job when changing pages
     setSelectedJob(null)
   }
@@ -124,36 +183,73 @@ function RouteComponent() {
           </div>
 
           {/* Search and Filters */}
-          <div className="flex flex-col gap-3">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex flex-col gap-3"
+          >
             <input
               type="text"
               placeholder="Search jobs..."
               className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              {...register('searchQuery')}
             />
+            {errors.searchQuery && (
+              <span className="text-red-500 text-sm">
+                {errors.searchQuery.message}
+              </span>
+            )}
+
             <div className="flex gap-2 text-sm">
               <input
                 type="text"
                 placeholder="All Locations"
                 className="px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-700"
+                {...register('location')}
               />
-              <select className="px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-700">
-                <option>All Types</option>
-                <option>Full-time</option>
-                <option>Part-time</option>
-                <option>Contract</option>
+              {errors.location && (
+                <span className="text-red-500 text-sm">
+                  {errors.location.message}
+                </span>
+              )}
+
+              <select
+                className="px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-700"
+                {...register('jobType')}
+              >
+                <option value="">All Types</option>{' '}
+                {/* Empty value for "All Types" */}
+                {Object.values(JobType).map((type) => (
+                  <option key={type} value={type}>
+                    {type.charAt(0).toUpperCase() +
+                      type.slice(1).replace('-', ' ')}
+                  </option>
+                ))}
               </select>
-              <select className="px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-700">
-                <option>Date Posted</option>
-                <option>Last 24 hours</option>
-                <option>Last week</option>
-                <option>Last month</option>
-              </select>
-              <button className="px-3 py-2 border border-gray-300 rounded-md bg-blue-500 text-white">
+              {errors.jobType && (
+                <span className="text-red-500 text-sm">
+                  {errors.jobType.message}
+                </span>
+              )}
+
+              <button
+                type="submit"
+                className="px-3 py-2 border border-gray-300 rounded-md bg-blue-500 text-white"
+              >
                 <FontAwesomeIcon className="pr-2" icon={faSearch} />
                 Search
               </button>
+
+              {isDirty && (
+                <button
+                  className="px-3 py-2 border border-gray-600 rounded-md text-blue-900"
+                  onClick={resetSearch}
+                >
+                  <FontAwesomeIcon className="pr-2" icon={faTimes} />
+                  Reset
+                </button>
+              )}
             </div>
-          </div>
+          </form>
         </div>
 
         {/* Job Cards - Scrollable Area */}

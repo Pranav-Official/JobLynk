@@ -1,10 +1,26 @@
-import { Link, createFileRoute } from '@tanstack/react-router'
+import { Link, createFileRoute, useRouter } from '@tanstack/react-router'
+import { useState } from 'react'
 
 export const Route = createFileRoute('/')({
   component: App,
 })
 
 function App() {
+  // const { searchQuery, location, setSearchParams } = useSearchStore()
+  const [searchQuery, setSearchQuery] = useState('')
+  const [location, setLocation] = useState('')
+  const router = useRouter()
+
+  const routeToJobs = () => {
+    router.navigate({
+      to: '/jobs',
+      search: {
+        searchQuery: searchQuery,
+        location: location,
+      },
+    })
+  }
+
   return (
     <div className="flex h-full bg-gray-100">
       {/* Image Section (2/3) */}
@@ -27,14 +43,21 @@ function App() {
               type="text"
               placeholder="Job title, keywords, or company"
               className="p-3 border border-gray-300 rounded-l-lg w-2/3 focus:outline-none focus:ring-2 focus:ring-blue-600 text-black"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
             <input
               type="text"
               placeholder="Location"
               className="p-3 border border-gray-300 border-l-0 w-1/3 focus:outline-none focus:ring-2 focus:ring-blue-600 text-black"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
             />
           </div>
-          <button className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition duration-300">
+          <button
+            className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition duration-300"
+            onClick={routeToJobs}
+          >
             Search
           </button>
           <div className="flex justify-center mt-4">
