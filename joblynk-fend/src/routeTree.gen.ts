@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RedirectRouteImport } from './routes/redirect'
 import { Route as JobsRouteImport } from './routes/jobs'
+import { Route as OnboardingRouteRouteImport } from './routes/onboarding/route'
 import { Route as IndexRouteImport } from './routes/index'
 
 const RedirectRoute = RedirectRouteImport.update({
@@ -23,6 +24,11 @@ const JobsRoute = JobsRouteImport.update({
   path: '/jobs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OnboardingRouteRoute = OnboardingRouteRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -31,30 +37,34 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/onboarding': typeof OnboardingRouteRoute
   '/jobs': typeof JobsRoute
   '/redirect': typeof RedirectRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/onboarding': typeof OnboardingRouteRoute
   '/jobs': typeof JobsRoute
   '/redirect': typeof RedirectRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/onboarding': typeof OnboardingRouteRoute
   '/jobs': typeof JobsRoute
   '/redirect': typeof RedirectRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/jobs' | '/redirect'
+  fullPaths: '/' | '/onboarding' | '/jobs' | '/redirect'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/jobs' | '/redirect'
-  id: '__root__' | '/' | '/jobs' | '/redirect'
+  to: '/' | '/onboarding' | '/jobs' | '/redirect'
+  id: '__root__' | '/' | '/onboarding' | '/jobs' | '/redirect'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  OnboardingRouteRoute: typeof OnboardingRouteRoute
   JobsRoute: typeof JobsRoute
   RedirectRoute: typeof RedirectRoute
 }
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JobsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  OnboardingRouteRoute: OnboardingRouteRoute,
   JobsRoute: JobsRoute,
   RedirectRoute: RedirectRoute,
 }
