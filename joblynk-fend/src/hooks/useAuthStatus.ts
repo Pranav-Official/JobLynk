@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import useStore from '@/stores/authStore'
 import { AUTH_CHECK_ENDPOINT, getFullApiUrl } from '@/constants/endpoints'
 
-interface AuthStatus {
+export interface AuthStatus {
   isLoggedIn: boolean
   isLoading: boolean
   error: Error | null
@@ -28,22 +28,26 @@ export function useAuthStatus(): AuthStatus {
     const checkStatus = async () => {
       setIsLoading(true)
       setError(null)
-      try {
-        const response = await fetch(getFullApiUrl(AUTH_CHECK_ENDPOINT), {
-          credentials: 'include',
-        })
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-        const data = await response.json()
-        const loggedInStatus = data.isLoggedIn
+      if (!isLoggedIn) {
+        try {
+          const response = await fetch(getFullApiUrl(AUTH_CHECK_ENDPOINT), {
+            credentials: 'include',
+          })
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`)
+          }
+          const data = await response.json()
+          const loggedInStatus = data.isLoggedIn
 
-        setIsLoggedIn(loggedInStatus)
-      } catch (err) {
-        console.error('Failed to check login status:', err)
-        setError(err instanceof Error ? err : new Error(String(err)))
-        setIsLoggedIn(false) // Assume not logged in on error
-      } finally {
+          setIsLoggedIn(loggedInStatus)
+        } catch (err) {
+          console.error('Failed to check login status:', err)
+          setError(err instanceof Error ? err : new Error(String(err)))
+          setIsLoggedIn(false) // Assume not logged in on error
+        } finally {
+          setIsLoading(false)
+        }
+      } else {
         setIsLoading(false)
       }
     }

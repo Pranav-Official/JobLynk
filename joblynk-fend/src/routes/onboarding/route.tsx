@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faChevronLeft,
@@ -9,6 +9,13 @@ import type { UserRole } from '@/constants/types/user'
 import useOnboardingSteps from '@/hooks/useOnboardingStep'
 
 export const Route = createFileRoute('/onboarding')({
+  beforeLoad: ({ context }) => {
+    console.log('context', context)
+    if (!context.auth.isLoggedIn) {
+      console.log('not logged in cannot access /onboarding')
+      throw redirect({ to: '/' })
+    }
+  },
   component: RouteComponent,
 })
 

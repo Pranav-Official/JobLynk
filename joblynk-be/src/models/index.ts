@@ -5,6 +5,8 @@ import config from "../config/config";
 // Removed: import TaskModelInitializer, { Task } from "./task.model";
 import UserModelInitializer, { User } from "./user/user.model";
 import JobModelInitializer, { Job } from "./jobs/jobs.model";
+import SeekerModelInitializer, { Seeker } from "./user/seeker.model";
+import RecruiterModelInitializer, { Recruiter } from "./user/recruiter.model";
 const dbConfig = config.database;
 
 const sequelize = new Sequelize(
@@ -23,6 +25,8 @@ interface Db {
   sequelize: Sequelize;
   Sequelize: typeof Sequelize;
   User: typeof User; // Add User model type
+  Seeker: typeof Seeker;
+  Recruiter: typeof Recruiter;
   Jobs: typeof Job; // Add Job model type
 }
 
@@ -31,6 +35,8 @@ const db: Partial<Db> = {};
 
 // Initialize all models by passing the sequelize instance and DataTypes
 db.User = UserModelInitializer(sequelize, DataTypes);
+db.Seeker = SeekerModelInitializer(sequelize, DataTypes);
+db.Recruiter = RecruiterModelInitializer(sequelize, DataTypes);
 db.Jobs = JobModelInitializer(sequelize, DataTypes);
 
 // Assign sequelize instance and Sequelize class to the db object

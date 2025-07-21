@@ -28,9 +28,8 @@ export default (sequelize: Sequelize, dataTypes: typeof DataTypes) => {
   User.init(
     {
       id: {
-        type: dataTypes.STRING(36), // Using STRING for UUIDs or similar string IDs
+        type: new dataTypes.STRING(100), // Using STRING for UUIDs or similar string IDs
         primaryKey: true,
-        defaultValue: DataTypes.UUIDV4, // Example: automatically generate UUIDs
       },
       firstName: {
         type: new dataTypes.STRING(128),

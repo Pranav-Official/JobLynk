@@ -1,17 +1,24 @@
 import type { Request, Response } from "express";
+import { StatusCodes, getReasonPhrase } from "http-status-codes";
 import jobService from "../services/jobs.service";
-import { JobStatus } from "../constants/enums"; // Import JobStatus
-import { literal } from "sequelize";
+import { JobStatus } from "../constants/enums";
+import ApiError from "../utils/ApiError";
 
 class JobController {
   public createJob = async (req: Request, res: Response): Promise<void> => {
     try {
       const jobAttributes = req.body;
       const job = await jobService.createJob(jobAttributes);
-      res.status(201).json(job);
-    } catch (error) {
-      console.error("Error creating job:", error);
-      res.status(500).json({ error: "Failed to create job" });
+      res.status(StatusCodes.CREATED).json(job);
+    } catch (error: any) {
+      if (error instanceof ApiError) {
+        res.status(error.statusCode).json({ message: error.message });
+      } else {
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+          message:
+            error.message || getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR),
+        });
+      }
     }
   };
 
@@ -24,25 +31,27 @@ class JobController {
       const status = req.body.status as JobStatus;
 
       if (!status) {
-        res.status(400).json({ error: "Status is required" });
-        return;
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Status is required");
       }
 
       if (!Object.values(JobStatus).includes(status)) {
-        res.status(400).json({ error: "Invalid status value" });
-        return;
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid status value");
       }
 
       const updatedJob = await jobService.updateJobStatus(
         jobId as string,
         status,
       );
-      res.status(200).json(updatedJob);
+      res.status(StatusCodes.OK).json(updatedJob);
     } catch (error: any) {
-      console.error("Error updating job status:", error);
-      res
-        .status(500)
-        .json({ error: error.message || "Failed to update job status" });
+      if (error instanceof ApiError) {
+        res.status(error.statusCode).json({ message: error.message });
+      } else {
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+          message:
+            error.message || getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR),
+        });
+      }
     }
   };
 
@@ -66,7 +75,7 @@ class JobController {
           jobType,
         );
 
-      res.status(200).json({
+      res.status(StatusCodes.OK).json({
         data: {
           jobs,
           total,
@@ -76,9 +85,15 @@ class JobController {
         message: "Paginated jobs retrieved successfully",
         status: "success",
       });
-    } catch (error) {
-      console.error("Error getting paginated jobs:", error);
-      res.status(500).json({ error: "Failed to get paginated jobs" });
+    } catch (error: any) {
+      if (error instanceof ApiError) {
+        res.status(error.statusCode).json({ message: error.message });
+      } else {
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+          message:
+            error.message || getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR),
+        });
+      }
     }
   };
 
@@ -89,18 +104,23 @@ class JobController {
       const job = await jobService.getJobById(jobId);
 
       if (!job) {
-        res.status(404).json({ error: "Job not found" });
-        return;
+        throw new ApiError(StatusCodes.NOT_FOUND, "Job not found");
       }
 
-      res.status(200).json({
+      res.status(StatusCodes.OK).json({
         data: job,
         message: "Job retrieved successfully",
         status: "success",
       });
-    } catch (error) {
-      console.error("Error getting job by ID:", error);
-      res.status(500).json({ error: "Failed to get job by ID" });
+    } catch (error: any) {
+      if (error instanceof ApiError) {
+        res.status(error.statusCode).json({ message: error.message });
+      } else {
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+          message:
+            error.message || getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR),
+        });
+      }
     }
   };
 }

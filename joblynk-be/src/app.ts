@@ -6,6 +6,7 @@ import cors from "cors";
 import jobRouter from "./routes/jobs.routes";
 import userRouter from "./routes/user.routes";
 import authRouter from "./routes/auth.routes";
+import seekerRouter from "./routes/seeker.routes";
 
 const app = express();
 const port = 8080;
@@ -24,6 +25,7 @@ app.use(morgan("dev"));
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
 app.use("/api/jobs", jobRouter);
+app.use("/api/seeker", seekerRouter);
 
 app.get("/health", (req, res) => {
   res.status(200).send("API is healthy");

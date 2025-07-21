@@ -7,10 +7,16 @@ class UserService {
     return user.get({ plain: true });
   }
 
-  async updateUserRole(userId: number, role: string): Promise<UserAttributes> {
+  async updateAnyUserAttribute(
+    userId: string,
+    updates: Partial<UserAttributes>,
+  ): Promise<UserAttributes> {
+    console.log("userid", userId);
     const user = await db.User.findByPk(userId);
-    if (!user) throw new Error("User not found");
-    await user.update({ role });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    await user.update(updates);
     return user.get({ plain: true });
   }
 }

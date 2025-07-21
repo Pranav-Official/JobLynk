@@ -21,6 +21,12 @@ function App() {
     })
   }
 
+  const routeToOnboadinf = () => {
+    router.navigate({
+      to: '/onboarding',
+    })
+  }
+
   return (
     <div className="flex h-full bg-gray-100">
       {/* Image Section (2/3) */}
@@ -61,7 +67,10 @@ function App() {
             Search
           </button>
           <div className="flex justify-center mt-4">
-            <Link to="/" className="text-blue-600 hover:text-blue-800">
+            <Link
+              to="/onboarding"
+              className="text-blue-600 hover:text-blue-800"
+            >
               Or Hire Employees
             </Link>
           </div>
