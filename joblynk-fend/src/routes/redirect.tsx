@@ -1,7 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
+import { useQuery } from '@tanstack/react-query'
 import { useAuthStatus } from '@/hooks/useAuthStatus'
+import { getUserProfile } from '@/services/user'
 
 export const Route = createFileRoute('/redirect')({
   component: RedirectPage,
@@ -9,6 +11,14 @@ export const Route = createFileRoute('/redirect')({
 
 function RedirectPage() {
   const { isLoggedIn, isLoading, error } = useAuthStatus()
+  const {
+    data,
+    isLoading: isDataLoading,
+    isError,
+  } = useQuery({
+    queryKey: ['userDetails'],
+    queryFn: () => getUserProfile(),
+  })
 
   return (
     <div className="flex h-screen bg-gray-50 items-center justify-center p-4">
@@ -56,6 +66,7 @@ function RedirectPage() {
           </>
         )}
       </div>
+      <p>{JSON.stringify(data)}</p>
     </div>
   )
 }

@@ -6,7 +6,7 @@ const workos = new WorkOS(process.env.WORKOS_API_KEY, {
 });
 
 // Auth middleware function
-async function withAuth(
+export async function withAuth(
   req: Request,
   res: Response,
   next: NextFunction,
@@ -20,8 +20,7 @@ async function withAuth(
 
   if (authResult.authenticated) {
     const userId = authResult.user.id;
-    req.body.userId = userId;
-    req.query.userId = userId;
+    req.userId = userId;
     return next();
   }
 

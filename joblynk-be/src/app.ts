@@ -8,6 +8,8 @@ import userRouter from "./routes/user.routes";
 import authRouter from "./routes/auth.routes";
 import seekerRouter from "./routes/seeker.routes";
 
+import { withAuth } from "./middleware/auth.middleware";
+
 const app = express();
 const port = 8080;
 
@@ -23,7 +25,7 @@ app.use(express.json()); // For parsing application/json
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 app.use("/api/auth", authRouter);
-app.use("/api/user", userRouter);
+app.use("/api/user", withAuth, userRouter);
 app.use("/api/jobs", jobRouter);
 app.use("/api/seeker", seekerRouter);
 
