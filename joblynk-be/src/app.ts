@@ -1,4 +1,5 @@
 import express from "express";
+import AWS from "aws-sdk";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import cors from "cors";
@@ -8,6 +9,7 @@ import jobRouter from "./routes/jobs.routes";
 import userRouter from "./routes/user.routes";
 import authRouter from "./routes/auth.routes";
 import seekerRouter from "./routes/seeker.routes";
+import filesRouter from "./routes/files.routes";
 
 import { withAuth } from "./middleware/auth.middleware";
 import { uploadRouter } from "./routes/uploadthing.routes";
@@ -21,6 +23,14 @@ const corsOptions = {
   credentials: true,
 };
 
+const s3 = new AWS.S3({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+  },
+});
+
 app.use(cookieParser()); // Parse cookies
 app.use(cors(corsOptions)); // Enable CORS with options
 app.use(express.json()); // For parsing application/json
@@ -30,14 +40,8 @@ app.use("/api/auth", authRouter);
 app.use("/api/user", withAuth, userRouter);
 app.use("/api/jobs", jobRouter);
 app.use("/api/seeker", withAuth, seekerRouter);
-app.use(
-  "/api/uploadthing",
-  withAuth,
-  createRouteHandler({
-    router: uploadRouter,
-    config: { token: process.env.UPLOADTHING_TOKEN },
-  }),
-);
+app.use("/api/files", filesRouter);
+
 
 app.get("/health", (req, res) => {
   res.status(200).send("API is healthy");

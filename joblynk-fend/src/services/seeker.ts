@@ -11,3 +11,13 @@ export const updateSeekerEmployment = async (
   })
   return apiResponse.data
 }
+
+
+export const updateSeekerResume = async (
+  resumeKey: string,
+): Promise<ApiResponse<SeekerAttributes>> => {
+  const apiResponse = await api.post(`${SEEKER_ENDPOINT}`, {
+    resumeUrl: resumeKey,
+  })
+  return apiResponse.data
+}

@@ -9,7 +9,7 @@ export interface SeekerAttributes {
   resumeUrl?: string;
 }
 
-export class Seeker extends Model<SeekerAttributes> {}
+export class Seeker extends Model<SeekerAttributes> { }
 
 // Export a function that initializes the Seeker model
 export default (sequelize: Sequelize, dataTypes: typeof DataTypes) => {
@@ -40,9 +40,6 @@ export default (sequelize: Sequelize, dataTypes: typeof DataTypes) => {
       resumeUrl: {
         type: new dataTypes.STRING(500), // Sufficient length for a URL
         allowNull: true,
-        validate: {
-          isUrl: true, // Sequelize's built-in URL validator
-        },
       },
     },
     {
