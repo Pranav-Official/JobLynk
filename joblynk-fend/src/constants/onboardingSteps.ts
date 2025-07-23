@@ -51,4 +51,18 @@ const onboardingSteps: Array<OnboardingStep> = [
   },
 ]
 
+export const seekerSteps: Array<string> = [
+  'step1',
+  'step2',
+  'step3',
+  'step4',
+  'step6',
+]
+export const recruiterSteps: Array<string> = [
+  'step1',
+  'step2',
+  'step5',
+  'step6',
+]
+
 export default onboardingSteps

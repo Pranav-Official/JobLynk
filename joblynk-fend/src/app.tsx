@@ -1,8 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from '@tanstack/react-router'
-import { useAuthStatus } from './hooks/useAuthStatus'
 import { router } from './router'
-import { useEffect } from 'react'
+import useStore from './stores/authStore'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -14,10 +13,10 @@ const queryClient = new QueryClient({
 })
 
 const App = () => {
-  const auth = useAuthStatus()
-  useEffect(() => {
-    console.log('auth', auth)
-  }, [auth])
+  const isLoggedIn = useStore((state) => state.isLoggedIn)
+  const auth = {
+    isLoggedIn,
+  }
 
   return (
     <QueryClientProvider client={queryClient}>

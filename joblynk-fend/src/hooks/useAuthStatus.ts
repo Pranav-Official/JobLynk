@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import useStore from '@/stores/authStore'
 import { AUTH_CHECK_ENDPOINT, getFullApiUrl } from '@/constants/endpoints'
+import useUserStore from '@/stores/userStore'
 
 export interface AuthStatus {
   isLoggedIn: boolean
@@ -23,6 +24,7 @@ export function useAuthStatus(): AuthStatus {
   const [error, setError] = useState<Error | null>(null)
   const setIsLoggedIn = useStore((state) => state.setIsLoggedIn)
   const isLoggedIn = useStore((state) => state.isLoggedIn)
+  const { setUserData } = useUserStore()
 
   useEffect(() => {
     const checkStatus = async () => {
@@ -38,6 +40,9 @@ export function useAuthStatus(): AuthStatus {
           }
           const data = await response.json()
           const loggedInStatus = data.isLoggedIn
+          console.log('login status data:', data)
+          const { firstName, lastName, email, role } = data.data.userDetails
+          setUserData(firstName, lastName, email, role)
 
           setIsLoggedIn(loggedInStatus)
         } catch (err) {

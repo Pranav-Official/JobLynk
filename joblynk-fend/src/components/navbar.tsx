@@ -13,12 +13,14 @@ export default function NavBar() {
   const logoutUrl = getFullApiUrl(AUTH_LOGOUT_ENDPOINT)
   const [isLoading, setIsLoading] = useState(false)
   const isLoggedIn = useStore((state) => state.isLoggedIn)
+  const setIsLoggedIn = useStore((state) => state.setIsLoggedIn)
 
   const handleAuthClick = () => {
     setIsLoading(true)
     if (isLoggedIn) {
       console.log('Initiating logout redirect...')
       window.location.href = logoutUrl
+      setIsLoggedIn(false)
     } else {
       console.log('Initiating login redirect...')
       window.location.href = loginUrl

@@ -1,6 +1,9 @@
 import { useMemo } from 'react'
 import type { OnboardingStep, UserRole } from '@/constants/types/user'
-import onboardingSteps from '@/constants/onboardingSteps'
+import onboardingSteps, {
+  recruiterSteps,
+  seekerSteps,
+} from '@/constants/onboardingSteps'
 
 interface UseOnboardingStepsReturn {
   title: string
@@ -10,7 +13,7 @@ interface UseOnboardingStepsReturn {
   isNextEnabled: boolean
   isPreviousEnabled: boolean
   progress: number
-  currentStep: OnboardingStep | null
+  currentStep: OnboardingStep
   nextStep: OnboardingStep | null
   previousStep: OnboardingStep | null
   totalSteps: number
@@ -32,6 +35,25 @@ const useOnboardingSteps = (
     let filtered = onboardingSteps
     if (userRole) {
       filtered = onboardingSteps.filter((step) => step.role.includes(userRole))
+      if (userRole === 'seeker') {
+        stepId =
+          filtered.find(
+            (f) =>
+              f.id ===
+              seekerSteps[seekerSteps.findIndex((step) => step === stepId) + 1],
+          )?.id || ''
+        console.log('next seeker step', stepId)
+      } else {
+        stepId =
+          filtered.find(
+            (f) =>
+              f.id ===
+              recruiterSteps[
+                recruiterSteps.findIndex((step) => step === stepId) + 1
+              ],
+          )?.id || ''
+        console.log('next recruiter step', stepId)
+      }
     }
     const currentIndex = filtered.findIndex((step) => step.id === stepId)
     const current = filtered[currentIndex] || null // Handle case where stepId is not found

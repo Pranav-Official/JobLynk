@@ -17,7 +17,9 @@ class UserController {
       });
     } catch (error: any) {
       if (error instanceof ApiError) {
-        res.status(error.statusCode).json({ message: error.message });
+        res
+          .status(error.statusCode)
+          .json({ data: null, message: error.message });
       } else {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
           message:
@@ -30,6 +32,7 @@ class UserController {
   public createUser = async (req: Request, res: Response): Promise<void> => {
     try {
       const userAttributes = req.body;
+      userAttributes.id = req.userId;
       const user = await userService.createUser(userAttributes);
       res.status(StatusCodes.CREATED).json(user);
     } catch (error: any) {

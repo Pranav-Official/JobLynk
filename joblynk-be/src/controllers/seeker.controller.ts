@@ -6,12 +6,12 @@ import ApiError from "../utils/ApiError";
 class SeekerController {
   public updateSeeker = async (req: Request, res: Response): Promise<void> => {
     try {
-      const updates = req.body; // Updates to apply to the seeker profile
-      const { userId } = updates;
+      const updates = req.body;
+      const userId = req.userId;
       if (!userId) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "User ID is required.");
       }
-      if (Object.keys(updates).length <= 1) {
+      if ((Object.keys(updates).length = 0)) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "No updates provided.");
       }
 

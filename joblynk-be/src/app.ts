@@ -2,6 +2,7 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import cors from "cors";
+import { createRouteHandler } from "uploadthing/express";
 
 import jobRouter from "./routes/jobs.routes";
 import userRouter from "./routes/user.routes";
@@ -9,6 +10,7 @@ import authRouter from "./routes/auth.routes";
 import seekerRouter from "./routes/seeker.routes";
 
 import { withAuth } from "./middleware/auth.middleware";
+import { uploadRouter } from "./routes/uploadthing.routes";
 
 const app = express();
 const port = 8080;
@@ -27,7 +29,15 @@ app.use(morgan("dev"));
 app.use("/api/auth", authRouter);
 app.use("/api/user", withAuth, userRouter);
 app.use("/api/jobs", jobRouter);
-app.use("/api/seeker", seekerRouter);
+app.use("/api/seeker", withAuth, seekerRouter);
+app.use(
+  "/api/uploadthing",
+  withAuth,
+  createRouteHandler({
+    router: uploadRouter,
+    config: { token: process.env.UPLOADTHING_TOKEN },
+  }),
+);
 
 app.get("/health", (req, res) => {
   res.status(200).send("API is healthy");

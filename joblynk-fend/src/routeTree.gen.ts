@@ -13,6 +13,12 @@ import { Route as RedirectRouteImport } from './routes/redirect'
 import { Route as JobsRouteImport } from './routes/jobs'
 import { Route as OnboardingRouteRouteImport } from './routes/onboarding/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as OnboardingRoleRouteImport } from './routes/onboarding/role'
+import { Route as OnboardingResumeRouteImport } from './routes/onboarding/resume'
+import { Route as OnboardingPersonalRouteImport } from './routes/onboarding/personal'
+import { Route as OnboardingExitRouteImport } from './routes/onboarding/exit'
+import { Route as OnboardingEmploymentRouteImport } from './routes/onboarding/employment'
+import { Route as OnboardingCompanyRouteImport } from './routes/onboarding/company'
 
 const RedirectRoute = RedirectRouteImport.update({
   id: '/redirect',
@@ -34,37 +40,116 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OnboardingRoleRoute = OnboardingRoleRouteImport.update({
+  id: '/role',
+  path: '/role',
+  getParentRoute: () => OnboardingRouteRoute,
+} as any)
+const OnboardingResumeRoute = OnboardingResumeRouteImport.update({
+  id: '/resume',
+  path: '/resume',
+  getParentRoute: () => OnboardingRouteRoute,
+} as any)
+const OnboardingPersonalRoute = OnboardingPersonalRouteImport.update({
+  id: '/personal',
+  path: '/personal',
+  getParentRoute: () => OnboardingRouteRoute,
+} as any)
+const OnboardingExitRoute = OnboardingExitRouteImport.update({
+  id: '/exit',
+  path: '/exit',
+  getParentRoute: () => OnboardingRouteRoute,
+} as any)
+const OnboardingEmploymentRoute = OnboardingEmploymentRouteImport.update({
+  id: '/employment',
+  path: '/employment',
+  getParentRoute: () => OnboardingRouteRoute,
+} as any)
+const OnboardingCompanyRoute = OnboardingCompanyRouteImport.update({
+  id: '/company',
+  path: '/company',
+  getParentRoute: () => OnboardingRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/onboarding': typeof OnboardingRouteRoute
+  '/onboarding': typeof OnboardingRouteRouteWithChildren
   '/jobs': typeof JobsRoute
   '/redirect': typeof RedirectRoute
+  '/onboarding/company': typeof OnboardingCompanyRoute
+  '/onboarding/employment': typeof OnboardingEmploymentRoute
+  '/onboarding/exit': typeof OnboardingExitRoute
+  '/onboarding/personal': typeof OnboardingPersonalRoute
+  '/onboarding/resume': typeof OnboardingResumeRoute
+  '/onboarding/role': typeof OnboardingRoleRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/onboarding': typeof OnboardingRouteRoute
+  '/onboarding': typeof OnboardingRouteRouteWithChildren
   '/jobs': typeof JobsRoute
   '/redirect': typeof RedirectRoute
+  '/onboarding/company': typeof OnboardingCompanyRoute
+  '/onboarding/employment': typeof OnboardingEmploymentRoute
+  '/onboarding/exit': typeof OnboardingExitRoute
+  '/onboarding/personal': typeof OnboardingPersonalRoute
+  '/onboarding/resume': typeof OnboardingResumeRoute
+  '/onboarding/role': typeof OnboardingRoleRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/onboarding': typeof OnboardingRouteRoute
+  '/onboarding': typeof OnboardingRouteRouteWithChildren
   '/jobs': typeof JobsRoute
   '/redirect': typeof RedirectRoute
+  '/onboarding/company': typeof OnboardingCompanyRoute
+  '/onboarding/employment': typeof OnboardingEmploymentRoute
+  '/onboarding/exit': typeof OnboardingExitRoute
+  '/onboarding/personal': typeof OnboardingPersonalRoute
+  '/onboarding/resume': typeof OnboardingResumeRoute
+  '/onboarding/role': typeof OnboardingRoleRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/onboarding' | '/jobs' | '/redirect'
+  fullPaths:
+    | '/'
+    | '/onboarding'
+    | '/jobs'
+    | '/redirect'
+    | '/onboarding/company'
+    | '/onboarding/employment'
+    | '/onboarding/exit'
+    | '/onboarding/personal'
+    | '/onboarding/resume'
+    | '/onboarding/role'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/onboarding' | '/jobs' | '/redirect'
-  id: '__root__' | '/' | '/onboarding' | '/jobs' | '/redirect'
+  to:
+    | '/'
+    | '/onboarding'
+    | '/jobs'
+    | '/redirect'
+    | '/onboarding/company'
+    | '/onboarding/employment'
+    | '/onboarding/exit'
+    | '/onboarding/personal'
+    | '/onboarding/resume'
+    | '/onboarding/role'
+  id:
+    | '__root__'
+    | '/'
+    | '/onboarding'
+    | '/jobs'
+    | '/redirect'
+    | '/onboarding/company'
+    | '/onboarding/employment'
+    | '/onboarding/exit'
+    | '/onboarding/personal'
+    | '/onboarding/resume'
+    | '/onboarding/role'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  OnboardingRouteRoute: typeof OnboardingRouteRoute
+  OnboardingRouteRoute: typeof OnboardingRouteRouteWithChildren
   JobsRoute: typeof JobsRoute
   RedirectRoute: typeof RedirectRoute
 }
@@ -99,12 +184,76 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/onboarding/role': {
+      id: '/onboarding/role'
+      path: '/role'
+      fullPath: '/onboarding/role'
+      preLoaderRoute: typeof OnboardingRoleRouteImport
+      parentRoute: typeof OnboardingRouteRoute
+    }
+    '/onboarding/resume': {
+      id: '/onboarding/resume'
+      path: '/resume'
+      fullPath: '/onboarding/resume'
+      preLoaderRoute: typeof OnboardingResumeRouteImport
+      parentRoute: typeof OnboardingRouteRoute
+    }
+    '/onboarding/personal': {
+      id: '/onboarding/personal'
+      path: '/personal'
+      fullPath: '/onboarding/personal'
+      preLoaderRoute: typeof OnboardingPersonalRouteImport
+      parentRoute: typeof OnboardingRouteRoute
+    }
+    '/onboarding/exit': {
+      id: '/onboarding/exit'
+      path: '/exit'
+      fullPath: '/onboarding/exit'
+      preLoaderRoute: typeof OnboardingExitRouteImport
+      parentRoute: typeof OnboardingRouteRoute
+    }
+    '/onboarding/employment': {
+      id: '/onboarding/employment'
+      path: '/employment'
+      fullPath: '/onboarding/employment'
+      preLoaderRoute: typeof OnboardingEmploymentRouteImport
+      parentRoute: typeof OnboardingRouteRoute
+    }
+    '/onboarding/company': {
+      id: '/onboarding/company'
+      path: '/company'
+      fullPath: '/onboarding/company'
+      preLoaderRoute: typeof OnboardingCompanyRouteImport
+      parentRoute: typeof OnboardingRouteRoute
+    }
   }
 }
 
+interface OnboardingRouteRouteChildren {
+  OnboardingCompanyRoute: typeof OnboardingCompanyRoute
+  OnboardingEmploymentRoute: typeof OnboardingEmploymentRoute
+  OnboardingExitRoute: typeof OnboardingExitRoute
+  OnboardingPersonalRoute: typeof OnboardingPersonalRoute
+  OnboardingResumeRoute: typeof OnboardingResumeRoute
+  OnboardingRoleRoute: typeof OnboardingRoleRoute
+}
+
+const OnboardingRouteRouteChildren: OnboardingRouteRouteChildren = {
+  OnboardingCompanyRoute: OnboardingCompanyRoute,
+  OnboardingEmploymentRoute: OnboardingEmploymentRoute,
+  OnboardingExitRoute: OnboardingExitRoute,
+  OnboardingPersonalRoute: OnboardingPersonalRoute,
+  OnboardingResumeRoute: OnboardingResumeRoute,
+  OnboardingRoleRoute: OnboardingRoleRoute,
+}
+
+const OnboardingRouteRouteWithChildren = OnboardingRouteRoute._addFileChildren(
+  OnboardingRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  OnboardingRouteRoute: OnboardingRouteRoute,
+  OnboardingRouteRoute: OnboardingRouteRouteWithChildren,
   JobsRoute: JobsRoute,
   RedirectRoute: RedirectRoute,
 }

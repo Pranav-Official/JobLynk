@@ -1,12 +1,13 @@
-import { useState } from 'react'
-import { createFileRoute, redirect } from '@tanstack/react-router'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { createContext, useEffect, useState } from 'react'
 import {
-  faChevronLeft,
-  faChevronRight,
-} from '@fortawesome/free-solid-svg-icons'
-import type { UserRole } from '@/constants/types/user'
-import useOnboardingSteps from '@/hooks/useOnboardingStep'
+  Outlet,
+  createFileRoute,
+  redirect,
+  useLocation,
+  useNavigate,
+} from '@tanstack/react-router'
+import type { OnboardingStep, UserRole } from '@/constants/types/user'
+import { useOnboardingStore } from '@/stores/onboardingStore'
 
 export const Route = createFileRoute('/onboarding')({
   beforeLoad: ({ context }) => {
@@ -19,43 +20,51 @@ export const Route = createFileRoute('/onboarding')({
   component: RouteComponent,
 })
 
-// Placeholder for the content of each step
-const StepContentOutlet = ({ step }: { step: number }) => {
-  return (
-    <div className="p-8 flex items-center justify-center h-full">
-      <h3 className="text-xl text-gray-700">Content for Step {step}</h3>
-    </div>
-  )
-}
+type OnboardingNavigationContextType = {
+  handleNextStep: () => void
+  handlePrevStep: () => void
+  currentStep: OnboardingStep
+} | null
+
+export const OnboardingNavigationContext =
+  createContext<OnboardingNavigationContextType>(null)
 
 function RouteComponent() {
-  const [stepId, setStepId] = useState('step1')
-  const [currentUserRole, setCurrentUserRole] = useState<UserRole>('')
+  const navigate = useNavigate()
+  const location = useLocation()
   const {
-    title,
-    currentRoute,
-    nextRoute,
-    previousRoute,
-    isNextEnabled,
-    isPreviousEnabled,
-    progress,
     currentStep,
     nextStep,
     previousStep,
-    totalSteps,
     currentStepIndex,
-  } = useOnboardingSteps(stepId || 'step1', currentUserRole)
-  const [cStep, setcStep] = useState(1)
+    totalSteps,
+    setCurrentStepIndex,
+  } = useOnboardingStore()
+
+  // Navigate to the first step on mount if we're on the base route
+  useEffect(() => {
+    if (location.pathname === '/onboarding' && currentStep.route) {
+      navigate({ to: `${currentStep.route}` })
+    }
+  }, [currentStep.route, location.pathname, navigate])
+
+  useEffect(() => {
+    navigate({ to: `${currentStep.route}` })
+  }, [currentStepIndex])
 
   const handleNextStep = () => {
-    setStepId(nextStep?.id || stepId)
+    setCurrentStepIndex(currentStepIndex + 1)
+    // if (nextStep?.route) {
+    //   navigate({ to: `${nextStep.route}` })
+    // }
   }
 
   const handlePrevStep = () => {
-    setStepId(previousStep?.id || stepId)
+    setCurrentStepIndex(currentStepIndex - 1)
+    // if (previousStep?.route) {
+    //   navigate({ to: `${previousStep.route}` })
+    // }
   }
-
-  const progressPercentage = ((cStep - 1) / (totalSteps - 1)) * 100
 
   return (
     <div className="flex h-screen bg-gray-50 pt-20 justify-center items-center">
@@ -63,53 +72,34 @@ function RouteComponent() {
         {/* Header - Progress Bar */}
         <div className="p-6 border-b border-gray-200 flex flex-col gap-4">
           <h2 className="text-2xl font-semibold text-gray-900 text-center">
-            {currentStep?.title || 'Loading...'}
+            {currentStep.title || 'Loading...'}
           </h2>
           <div className="w-full bg-gray-200 rounded-full h-2.5">
             <div
               className="bg-blue-600 h-2.5 rounded-full transition-all duration-300 ease-in-out"
-              style={{ width: `${progressPercentage}%` }}
+              style={{
+                width: `${((currentStepIndex + 1) * 100) / totalSteps}%`,
+              }}
             ></div>
           </div>
           <div className="text-center text-sm text-gray-600">
-            Step {cStep} of {totalSteps}
+            Step {currentStepIndex + 1} of {totalSteps}
           </div>
         </div>
-
-        {/* Step Content Area */}
-        <div className="flex-1 overflow-y-auto">
-          <StepContentOutlet step={cStep} />
-        </div>
-
-        {/* Footer - Navigation Buttons */}
-        <div className="p-6 border-t border-gray-200 flex justify-between items-center flex-shrink-0">
-          <button
-            onClick={handlePrevStep}
-            disabled={currentStep?.hidePrevious}
-            className={`px-4 py-2 rounded-md transition-colors duration-200 ${
-              currentStep?.hidePrevious
-                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                : 'bg-blue-500 text-white hover:bg-blue-600'
-            }`}
-          >
-            <FontAwesomeIcon icon={faChevronLeft} className="mr-2" />
-            Previous
-          </button>
-
-          <button
-            onClick={handleNextStep}
-            disabled={currentStep?.hideNext}
-            className={`px-4 py-2 rounded-md transition-colors duration-200 ${
-              currentStep?.hideNext
-                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                : 'bg-blue-500 text-white hover:bg-blue-600'
-            }`}
-          >
-            Next
-            <FontAwesomeIcon icon={faChevronRight} className="ml-2" />
-          </button>
-        </div>
+        <OnboardingNavigationContext.Provider
+          value={{
+            handleNextStep,
+            handlePrevStep,
+            currentStep: currentStep,
+          }}
+        >
+          {/* Step Content Area - This will render the child routes */}
+          <div className="flex-1 overflow-y-auto">
+            <Outlet />
+          </div>
+        </OnboardingNavigationContext.Provider>
       </div>
+      {/* {JSON.stringify(currentStep)} */}
     </div>
   )
 }

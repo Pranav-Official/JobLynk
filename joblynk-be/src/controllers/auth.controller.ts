@@ -86,15 +86,19 @@ class AuthController {
   };
 
   public logout = async (req: Request, res: Response): Promise<void> => {
-    const session = this.workos.userManagement.loadSealedSession({
-      sessionData: req.cookies["wos-session"],
-      cookiePassword: process.env.WORKOS_COOKIE_PASSWORD || "",
-    });
+    try {
+      const session = this.workos.userManagement.loadSealedSession({
+        sessionData: req.cookies["wos-session"],
+        cookiePassword: process.env.WORKOS_COOKIE_PASSWORD || "",
+      });
 
-    const url = await session.getLogoutUrl();
+      const url = await session.getLogoutUrl();
 
-    res.clearCookie("wos-session");
-    res.redirect(url);
+      res.clearCookie("wos-session");
+      res.redirect(url);
+    } catch (error: any) {
+      res.redirect("http://localhost:3000/");
+    }
   };
 }
 

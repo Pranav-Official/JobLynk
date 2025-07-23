@@ -12,9 +12,15 @@ class SeekerService {
       return seeker.get({ plain: true });
     } catch (error: any) {
       if (error.name === "SequelizeUniqueConstraintError") {
+        const seeker = await db.Seeker.findOne({
+          where: { userId: seekerAttributes.userId },
+        });
+        if (seeker) {
+          return seeker.get({ plain: true });
+        }
         throw new ApiError(
-          StatusCodes.CONFLICT,
-          "A seeker profile already exists for this user.",
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Failed to create seeker profile." + error,
         );
       }
       throw new ApiError(

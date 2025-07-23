@@ -1,7 +1,9 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 import { useQuery } from '@tanstack/react-query'
+import { useEffect } from 'react'
+import type { AxiosError } from 'axios'
 import { useAuthStatus } from '@/hooks/useAuthStatus'
 import { getUserProfile } from '@/services/user'
 
@@ -10,15 +12,33 @@ export const Route = createFileRoute('/redirect')({
 })
 
 function RedirectPage() {
+  const router = useRouter()
   const { isLoggedIn, isLoading, error } = useAuthStatus()
+
   const {
     data,
     isLoading: isDataLoading,
     isError,
+    error: fetchError,
   } = useQuery({
     queryKey: ['userDetails'],
     queryFn: () => getUserProfile(),
   })
+
+  useEffect(() => {
+    if (isError) {
+      const { response } = fetchError as AxiosError
+      if (response?.status === 404) {
+        router.navigate({
+          to: '/onboarding',
+        })
+      } else {
+        router.navigate({
+          to: '/',
+        })
+      }
+    }
+  }, [isError])
 
   return (
     <div className="flex h-screen bg-gray-50 items-center justify-center p-4">
