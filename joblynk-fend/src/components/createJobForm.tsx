@@ -1,26 +1,27 @@
-import { useForm } from 'react-hook-form'
-import type { JobStatusType, JobTypeType } from '@/constants/enums' // Adjust this import path as needed
-import { JobStatus, JobType } from '@/constants/enums'
+import { useForm } from 'react-hook-form';
+import type { JobStatusType, JobTypeType } from '@/constants/enums';
+import { JobStatus, JobType } from '@/constants/enums';
 
 type CreateJobFormData = {
-  title: string
-  descriptionMarkdown: string
-  location: string
-  jobType: JobTypeType
-  salaryMin: number | null
-  salaryMax: number | null
-  salaryCurrency: string
-  applyUrl: string
-  status: JobStatusType
-  expiresAt: string // Using string for date input
-  easyApply: boolean
-}
+  title: string;
+  descriptionMarkdown: string;
+  location: string;
+  jobType: JobTypeType;
+  salaryMin: number | null;
+  salaryMax: number | null;
+  salaryCurrency: string;
+  applyUrl: string;
+  status: JobStatusType;
+  expiresAt: string;
+  easyApply: boolean;
+  skills: string;
+};
 
 type CreateJobFormProps = {
-  onClose: () => void
-  onSubmit: (data: CreateJobFormData) => void
-  isLoading?: boolean
-}
+  onClose: () => void;
+  onSubmit: (data: Omit<CreateJobFormData, 'skills'> & { skills: string[] }) => void;
+  isLoading?: boolean;
+};
 
 export function CreateJobForm({
   onClose,
@@ -31,11 +32,21 @@ export function CreateJobForm({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<CreateJobFormData>()
+  } = useForm<CreateJobFormData>();
+
+  const transformAndSubmit = (data: CreateJobFormData) => {
+    const transformedData = {
+      ...data,
+      skills: data.skills
+        ? data.skills.split(',').map((skill) => skill.trim())
+        : [],
+    };
+    onSubmit(transformedData);
+  };
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(transformAndSubmit)}
       className="space-y-6 p-6 bg-white rounded-lg shadow-xl max-h-[90vh] overflow-y-auto w-full max-w-2xl"
     >
       <h2 className="text-2xl font-bold text-gray-900 text-center">
@@ -97,6 +108,25 @@ export function CreateJobForm({
         />
         {errors.location && (
           <p className="mt-1 text-sm text-red-600">{errors.location.message}</p>
+        )}
+      </div>
+
+      <div>
+        <label
+          htmlFor="skills"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Skills (comma-separated)
+        </label>
+        <input
+          id="skills"
+          type="text"
+          {...register('skills')}
+          placeholder="e.g., React, Node.js, TypeScript"
+          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+        />
+        {errors.skills && (
+          <p className="mt-1 text-sm text-red-600">{errors.skills.message}</p>
         )}
       </div>
 
@@ -264,5 +294,5 @@ export function CreateJobForm({
         </button>
       </div>
     </form>
-  )
+  );
 }

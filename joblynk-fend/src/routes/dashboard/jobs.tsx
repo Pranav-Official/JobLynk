@@ -44,11 +44,9 @@ function RouteComponent() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recuiter/jobs'] }) // Invalidate and refetch jobs
       setIsCreateModalOpen(false) // Close the modal on success
-      alert('Job created successfully!')
     },
     onError: (error) => {
       console.error('Error creating job:', error)
-      alert(`Failed to create job: ${error.message || 'Unknown error'}`)
     },
   })
 
