@@ -51,7 +51,7 @@ export type JobItem = {
   salaryCurrency?: string | null
   applyUrl: string
   status: JobStatusType
-  skills?: string[] | null
+  skills?: Array<string> | null
   postedAt?: Date | null
   expiresAt?: Date | null
   easyApply: boolean

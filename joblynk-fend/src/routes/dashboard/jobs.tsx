@@ -21,32 +21,47 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { JobItem } from '@/constants/types/job'
 import { CreateJobForm } from '@/components/createJobForm'
-import { Modal } from '@/components/modal' // Adjust import path
+import { Modal } from '@/components/modal'
 import { JobStatus, JobType } from '@/constants/enums'
-import { createJob, getJobs } from '@/services/jobs' // Assuming you have a createJob service
+import { createJob, editJob, getJobsForRecruiter } from '@/services/jobs'
+import useUserStore from '@/stores/userStore'
 
 export const Route = createFileRoute('/dashboard/jobs')({
   component: RouteComponent,
 })
 
 function RouteComponent() {
+  const { recruiterId } = useUserStore()
   const queryClient = useQueryClient()
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [editingJob, setEditingJob] = useState<JobItem | null>(null)
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['recuiter/jobs'],
-    queryFn: () => getJobs(1),
+    queryFn: () => getJobsForRecruiter(recruiterId, 1),
   })
 
-  // Mutation for creating a new job
   const createJobMutation = useMutation({
-    mutationFn: createJob, // This function should take the new job data as an argument
+    mutationFn: createJob,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recuiter/jobs'] }) // Invalidate and refetch jobs
-      setIsCreateModalOpen(false) // Close the modal on success
+      queryClient.invalidateQueries({ queryKey: ['recuiter/jobs'] })
+      setIsCreateModalOpen(false)
     },
     onError: (error) => {
       console.error('Error creating job:', error)
+    },
+  })
+
+  const editJobMutation = useMutation({
+    mutationFn: ({ jobId, jobData }: { jobId: string; jobData: JobItem }) =>
+      editJob(jobId, jobData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['recuiter/jobs'] })
+      setIsCreateModalOpen(false)
+      setEditingJob(null)
+    },
+    onError: (error) => {
+      console.error('Error editing job:', error)
     },
   })
 
@@ -55,36 +70,37 @@ function RouteComponent() {
     alert(`Viewing job: ${jobId}`)
   }
 
-  const handleEdit = (jobId: string | undefined) => {
-    console.log(`Edit job with ID: ${jobId}`)
-    alert(`Editing job: ${jobId}`)
+  const handleEdit = (job: JobItem) => {
+    setEditingJob(job)
+    setIsCreateModalOpen(true)
   }
 
   const handleCreateJobPost = () => {
+    setEditingJob(null)
     setIsCreateModalOpen(true)
   }
 
   const handleCloseCreateModal = () => {
     setIsCreateModalOpen(false)
+    setEditingJob(null)
   }
 
-  const handleCreateJobSubmit = (formData: any) => {
-    // You might need to transform formData into the JobItem type
-    // before sending it to your backend.
-    // For example, if expiresAt is optional, convert "" to null.
-    const newJobData: JobItem = {
+  const handleFormSubmit = (formData: any) => {
+    const jobData: JobItem = {
       ...formData,
       salaryMin: formData.salaryMin === '' ? null : formData.salaryMin,
       salaryMax: formData.salaryMax === '' ? null : formData.salaryMax,
       salaryCurrency:
         formData.salaryCurrency === '' ? null : formData.salaryCurrency,
       expiresAt: formData.expiresAt ? new Date(formData.expiresAt) : null,
-      // recruiterId would typically come from your authenticated user's context
-      recruiterId: 'example-recruiter-id', // Placeholder, replace with actual ID
-      postedAt: new Date(), // Set current date as postedAt
+      postedAt: new Date(),
     }
-    console.log('Submitting new job:', newJobData)
-    createJobMutation.mutate(newJobData)
+
+    if (editingJob && editingJob.id) {
+      editJobMutation.mutate({ jobId: editingJob.id, jobData })
+    } else {
+      createJobMutation.mutate(jobData)
+    }
   }
 
   const columns = useMemo(
@@ -123,7 +139,7 @@ function RouteComponent() {
           }
           return 'N/A'
         },
-        id: 'salary', // Unique ID for the column
+        id: 'salary',
         header: 'Salary',
         cell: (info: any) => info.getValue(),
         enableSorting: true,
@@ -152,14 +168,15 @@ function RouteComponent() {
         header: 'Status',
         cell: (info: any) => (
           <span
-            className={`px-2 py-1 rounded-full text-xs font-semibold ${info.getValue() === JobStatus.ACTIVE
-              ? 'bg-green-100 text-green-800'
-              : info.getValue() === JobStatus.DRAFT
-                ? 'bg-yellow-100 text-yellow-800'
-                : info.getValue() === JobStatus.EXPIRED
-                  ? 'bg-red-100 text-red-800'
-                  : 'bg-gray-100 text-gray-800' // For FILLED status
-              }`}
+            className={`px-2 py-1 rounded-full text-xs font-semibold ${
+              info.getValue() === JobStatus.ACTIVE
+                ? 'bg-green-100 text-green-800'
+                : info.getValue() === JobStatus.DRAFT
+                  ? 'bg-yellow-100 text-yellow-800'
+                  : info.getValue() === JobStatus.EXPIRED
+                    ? 'bg-red-100 text-red-800'
+                    : 'bg-gray-100 text-gray-800'
+            }`}
           >
             {info.getValue().charAt(0).toUpperCase() + info.getValue().slice(1)}
           </span>
@@ -168,7 +185,7 @@ function RouteComponent() {
         enableColumnFilter: true,
       },
       {
-        id: 'actions', // Unique ID for the actions column
+        id: 'actions',
         header: 'Actions',
         cell: (info: any) => (
           <div className="flex items-center gap-2">
@@ -180,7 +197,7 @@ function RouteComponent() {
               <FontAwesomeIcon icon={faEye} />
             </button>
             <button
-              onClick={() => handleEdit(info.row.original.id)}
+              onClick={() => handleEdit(info.row.original as JobItem)}
               className="p-2 rounded-full bg-green-100 text-green-600 hover:bg-green-200 transition-colors"
               title="Edit Job"
             >
@@ -217,7 +234,6 @@ function RouteComponent() {
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    // debugTable: true, // Uncomment for debugging table state
   })
 
   return (
@@ -317,7 +333,6 @@ function RouteComponent() {
         </table>
       </div>
 
-      {/* Pagination Controls */}
       <div className="flex items-center justify-between mt-4">
         <div className="flex items-center gap-2">
           <button
@@ -372,12 +387,13 @@ function RouteComponent() {
         </select>
       </div>
 
-      {/* Create Job Modal */}
       <Modal isOpen={isCreateModalOpen} onClose={handleCloseCreateModal}>
         <CreateJobForm
           onClose={handleCloseCreateModal}
-          onSubmit={handleCreateJobSubmit}
-          isLoading={false} // Pass loading state to form
+          onSubmit={handleFormSubmit}
+          isLoading={createJobMutation.isPending || editJobMutation.isPending}
+          initialData={editingJob}
+          isEditMode={!!editingJob}
         />
       </Modal>
     </div>

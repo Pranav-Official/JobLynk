@@ -47,9 +47,9 @@ export async function withAuth(
       secure: true,
       sameSite: "lax",
     });
-
-    // Redirect to the same route to ensure the updated cookie is used
-    return res.redirect(req.originalUrl);
+    const userId = refreshResult.user.id;
+    req.userId = userId;
+    return next();
   } catch (e) {
     // Failed to refresh access token, redirect user to login page
     // after deleting the cookie

@@ -6,11 +6,15 @@ interface UserState {
   lastName: string
   email: string
   role: string
+  recruiterId: string
+  seekerId: string
   setUserData: (
     firstName: string,
     lastName: string,
     email: string,
     role: string,
+    recruiterId: string,
+    seekerId: string,
   ) => void
   clearUserData: () => void
   setUserRole: (role: string) => void
@@ -23,10 +27,19 @@ const useUserStore = create<UserState>()(
       lastName: '',
       email: '',
       role: '',
-      setUserData: (firstName, lastName, email, role) =>
-        set({ firstName, lastName, email, role }),
+      recruiterId: '',
+      seekerId: '',
+      setUserData: (firstName, lastName, email, role, recruiterId, seekerId) =>
+        set({ firstName, lastName, email, role, recruiterId, seekerId }),
       clearUserData: () =>
-        set({ firstName: '', lastName: '', email: '', role: '' }),
+        set({
+          firstName: '',
+          lastName: '',
+          email: '',
+          role: '',
+          recruiterId: '',
+          seekerId: '',
+        }),
       setUserRole: (role) => set({ role }),
     }),
     {

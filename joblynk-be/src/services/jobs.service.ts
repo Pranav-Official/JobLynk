@@ -6,8 +6,33 @@ import { Op } from "sequelize";
 
 class JobService {
   async createJob(jobAttributes: JobAttributes): Promise<JobAttributes> {
-    const job = await db.Jobs.create(jobAttributes);
-    return job.get({ plain: true });
+    try {
+      console.log("Creating job... with attributes:", jobAttributes);
+      const job = await db.Jobs.create(jobAttributes);
+      if (!job) {
+        throw new Error("Failed to create job");
+      }
+      return job.get({ plain: true });
+    } catch (error) {
+      console.error("Error creating job:", error);
+      throw new Error("Failed to create job");
+    }
+  }
+
+  async updateJob(jobId: string, jobData: JobAttributes) {
+    try {
+      const job = await db.Jobs.findByPk(jobId);
+
+      if (!job) {
+        throw new Error("Job not found");
+      }
+
+      await job.update(jobData);
+      return job.get({ plain: true });
+    } catch (error) {
+      console.error("Error updating job:", error);
+      throw new Error("Failed to update job");
+    }
   }
 
   async updateJobStatus(
@@ -39,12 +64,14 @@ class JobService {
     search?: string,
     location?: string,
     jobType?: string,
+    recruiterId?: string,
   ): Promise<{
     jobs: JobAttributes[];
     total: number;
     currentPage: number;
     totalPages: number;
   }> {
+    console.log("Fetching paginated jobs... for recruiterId:", recruiterId);
     const offset = (page - 1) * pageSize;
     const where: any = {};
 
@@ -63,7 +90,11 @@ class JobService {
       where.jobType = { [Op.eq]: jobType };
     }
 
-    where.status = { [Op.eq]: JobStatus.ACTIVE };
+    if (recruiterId) {
+      where.recruiterId = { [Op.eq]: recruiterId };
+    } else {
+      where.status = { [Op.eq]: JobStatus.ACTIVE };
+    }
 
     const { rows, count } = await db.Jobs.findAndCountAll({
       where,

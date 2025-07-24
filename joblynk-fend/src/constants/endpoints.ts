@@ -6,6 +6,8 @@ export const AUTH_LOGOUT_ENDPOINT = '/auth/logout'
 export const AUTH_CHECK_ENDPOINT = '/auth/is-logged-in'
 
 export const JOBS_LIST_ENDPOINT = '/jobs'
+export const JOBS_LIST_RECRUITER_ENDPOINT = '/jobs/recruiter'
+
 export const USER_DETAILS_ENDPOINT = '/user'
 export const USER_ROLE_ENDPOINT = '/user/role'
 

@@ -14,17 +14,10 @@ import {
 import { useQuery } from '@tanstack/react-query'
 import type { JobItem } from '@/constants/types/job'
 import { JobType } from '@/constants/types/job'
-import api from '@/utils/api'
-import { JOBS_LIST_ENDPOINT } from '@/constants/endpoints'
+import { getDetailedJob } from '@/services/jobs'
 
 interface JobDetailedViewProps {
   job: JobItem | null
-}
-
-const getDetailedJob = async (jobId: string) => {
-  const response = await api.get(`${JOBS_LIST_ENDPOINT}/${jobId}`)
-  console.log(response.data)
-  return response.data.data
 }
 
 const JobDetailedView: React.FC<JobDetailedViewProps> = ({ job }) => {

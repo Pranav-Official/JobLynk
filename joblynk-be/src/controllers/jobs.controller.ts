@@ -33,6 +33,26 @@ class JobController {
     }
   };
 
+  public updateJob = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { jobId } = req.params;
+      console.log("Updating job with ID:", jobId);
+      const jobData = req.body;
+      const updatedJob = await jobService.updateJob(jobId || "", jobData);
+      console.log("Updated job:", updatedJob);
+      res.status(StatusCodes.OK).json(updatedJob);
+    } catch (error: any) {
+      if (error instanceof ApiError) {
+        res.status(error.statusCode).json({ message: error.message });
+      } else {
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+          message:
+            error.message || getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR),
+        });
+      }
+    }
+  };
+
   public updateJobStatus = async (
     req: Request,
     res: Response,
@@ -71,6 +91,8 @@ class JobController {
     res: Response,
   ): Promise<void> => {
     try {
+      console.log("Fetching paginated jobs...");
+      const { recruiterId } = req.params;
       const page = parseInt(req.query.page as string, 10) || 1;
       const pageSize = parseInt(req.query.pageSize as string, 10) || 10;
       const search = req.query.search as string | undefined;
@@ -84,6 +106,7 @@ class JobController {
           search,
           location,
           jobType,
+          recruiterId,
         );
 
       res.status(StatusCodes.OK).json({
@@ -100,6 +123,7 @@ class JobController {
       if (error instanceof ApiError) {
         res.status(error.statusCode).json({ message: error.message });
       } else {
+        console.error(error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
           message:
             error.message || getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR),

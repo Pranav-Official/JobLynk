@@ -42,7 +42,16 @@ function RedirectPage() {
     if (data?.data.user) {
       const { firstName, lastName, email, role } = data.data.user
       console.log(firstName, lastName, email, role)
-      setUserData(firstName, lastName, email, role)
+      const recruiterId = data.data.recruiter?.id
+      const seekerId = data.data.seeker?.id
+      setUserData(
+        firstName,
+        lastName,
+        email,
+        role,
+        recruiterId || '',
+        seekerId || '',
+      )
       router.navigate({
         to: '/dashboard',
       })
