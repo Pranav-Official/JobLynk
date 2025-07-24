@@ -1,11 +1,12 @@
-import type { JobResponse } from '@/constants/types/job'
+import type { ApiResponse } from '@/constants/types/api'
+import type { UserProfile } from '@/constants/types/user'
 import {
   USER_DETAILS_ENDPOINT,
   USER_ROLE_ENDPOINT,
 } from '@/constants/endpoints'
 import api from '@/utils/api'
 
-export const getUserProfile = async (): Promise<JobResponse> => {
+export const getUserProfile = async (): Promise<ApiResponse<UserProfile>> => {
   const apiResponse = await api.get(`${USER_DETAILS_ENDPOINT}`)
   return apiResponse.data
 }

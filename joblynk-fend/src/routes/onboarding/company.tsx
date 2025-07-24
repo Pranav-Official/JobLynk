@@ -6,7 +6,9 @@ import {
   faChevronRight,
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { useMutation } from '@tanstack/react-query'
 import { OnboardingNavigationContext } from './route'
+import { updateRecruiterCompany } from '@/services/recruiter'
 
 export const Route = createFileRoute('/onboarding/company')({
   component: RouteComponent,
@@ -19,6 +21,24 @@ interface CompanyFormData {
 
 function RouteComponent() {
   const {
+    mutate: saveCompanyMutation,
+    isPending: isSavingCompany,
+    isError: saveCompanyError,
+    isSuccess: saveCompanySuccess,
+    error: saveCompanyErrorData,
+  } = useMutation({
+    mutationFn: (data: CompanyFormData) =>
+      updateRecruiterCompany(data.companyName, data.companyWebsite),
+    onSuccess: (data) => {
+      console.log('Recruiter Company saved successfully:', data)
+      navContext?.handleNextStep()
+    },
+    onError: (error) => {
+      console.error('Failed to save company details:', error)
+    },
+  })
+
+  const {
     register,
     handleSubmit,
     formState: { errors },
@@ -27,9 +47,7 @@ function RouteComponent() {
 
   const onValidSubmit = (data: CompanyFormData) => {
     console.log('Company data:', data)
-    if (navContext?.handleNextStep) {
-      navContext.handleNextStep()
-    }
+    saveCompanyMutation(data)
   }
 
   return (
@@ -98,14 +116,28 @@ function RouteComponent() {
             )}
           </div>
         </form>
+
+        {isSavingCompany && (
+          <p className="mt-4 text-blue-600">Saving company information...</p>
+        )}
+        {saveCompanyError && (
+          <p className="mt-4 text-red-600">
+            Error saving company information: {saveCompanyErrorData.message}
+          </p>
+        )}
+        {saveCompanySuccess && (
+          <p className="mt-4 text-green-600">
+            Company information saved successfully!
+          </p>
+        )}
       </div>
 
       <div className="p-6 border-t border-gray-200 flex justify-between items-center flex-shrink-0">
         <button
-          disabled={navContext?.currentStep.hidePrevious}
+          disabled={navContext?.currentStep.hidePrevious || isSavingCompany}
           onClick={navContext?.handlePrevStep}
           className={`px-4 py-2 rounded-md transition-colors duration-200 ${
-            navContext?.currentStep.hidePrevious
+            navContext?.currentStep.hidePrevious || isSavingCompany
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
               : 'bg-blue-500 text-white hover:bg-blue-600'
           }`}
@@ -115,15 +147,15 @@ function RouteComponent() {
         </button>
 
         <button
-          disabled={navContext?.currentStep.hideNext}
+          disabled={navContext?.currentStep.hideNext || isSavingCompany}
           onClick={handleSubmit(onValidSubmit)}
           className={`px-4 py-2 rounded-md transition-colors duration-200 ${
-            navContext?.currentStep.hideNext
+            navContext?.currentStep.hideNext || isSavingCompany
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
               : 'bg-blue-500 text-white hover:bg-blue-600'
           }`}
         >
-          Next
+          {isSavingCompany ? 'Saving...' : 'Next'}
           <FontAwesomeIcon icon={faChevronRight} className="ml-2" />
         </button>
       </div>

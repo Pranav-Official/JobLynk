@@ -48,6 +48,27 @@ class RecruiterService {
       );
     }
   }
+
+  public async getRecruiter(userId: string): Promise<RecruiterAttributes> {
+    try {
+      const recruiter = await db.Recruiter.findOne({ where: { userId } });
+      if (!recruiter) {
+        throw new ApiError(
+          StatusCodes.NOT_FOUND,
+          "Recruiter profile not found for this user.",
+        );
+      }
+      return recruiter.get({ plain: true });
+    } catch (error: any) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      throw new ApiError(
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        "Failed to retrieve recruiter profile. " + error,
+      );
+    }
+  }
 }
 
 export default new RecruiterService();

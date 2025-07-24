@@ -6,6 +6,7 @@ import { useEffect } from 'react'
 import type { AxiosError } from 'axios'
 import { useAuthStatus } from '@/hooks/useAuthStatus'
 import { getUserProfile } from '@/services/user'
+import useUserStore from '@/stores/userStore'
 
 export const Route = createFileRoute('/redirect')({
   component: RedirectPage,
@@ -14,7 +15,7 @@ export const Route = createFileRoute('/redirect')({
 function RedirectPage() {
   const router = useRouter()
   const { isLoggedIn, isLoading, error } = useAuthStatus()
-
+  const { setUserData } = useUserStore()
   const {
     data,
     isLoading: isDataLoading,
@@ -38,7 +39,15 @@ function RedirectPage() {
         })
       }
     }
-  }, [isError])
+    if (data?.data.user) {
+      const { firstName, lastName, email, role } = data.data.user
+      console.log(firstName, lastName, email, role)
+      setUserData(firstName, lastName, email, role)
+      router.navigate({
+        to: '/dashboard',
+      })
+    }
+  }, [isError, data])
 
   return (
     <div className="flex h-screen bg-gray-50 items-center justify-center p-4">
@@ -86,7 +95,6 @@ function RedirectPage() {
           </>
         )}
       </div>
-      <p>{JSON.stringify(data)}</p>
     </div>
   )
 }

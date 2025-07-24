@@ -9,10 +9,10 @@ import jobRouter from "./routes/jobs.routes";
 import userRouter from "./routes/user.routes";
 import authRouter from "./routes/auth.routes";
 import seekerRouter from "./routes/seeker.routes";
+import recruiterRouter from "./routes/recruiter.routes";
 import filesRouter from "./routes/files.routes";
 
 import { withAuth } from "./middleware/auth.middleware";
-import { uploadRouter } from "./routes/uploadthing.routes";
 
 const app = express();
 const port = 8080;
@@ -40,8 +40,8 @@ app.use("/api/auth", authRouter);
 app.use("/api/user", withAuth, userRouter);
 app.use("/api/jobs", jobRouter);
 app.use("/api/seeker", withAuth, seekerRouter);
-app.use("/api/files", filesRouter);
-
+app.use("/api/recruiter", withAuth, recruiterRouter);
+app.use("/api/files", withAuth, filesRouter);
 
 app.get("/health", (req, res) => {
   res.status(200).send("API is healthy");

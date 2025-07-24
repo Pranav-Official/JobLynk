@@ -64,7 +64,7 @@ function RouteComponent() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['jobs', searchQuery, location, jobType, currentPage],
     queryFn: () =>
-      getJobs(searchQuery || '', location || '', jobType || '', currentPage),
+      getJobs(currentPage, searchQuery || '', location || '', jobType || ''),
   })
 
   useEffect(() => {

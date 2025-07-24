@@ -32,14 +32,8 @@ export const OnboardingNavigationContext =
 function RouteComponent() {
   const navigate = useNavigate()
   const location = useLocation()
-  const {
-    currentStep,
-    nextStep,
-    previousStep,
-    currentStepIndex,
-    totalSteps,
-    setCurrentStepIndex,
-  } = useOnboardingStore()
+  const { currentStep, currentStepIndex, totalSteps, setCurrentStepIndex } =
+    useOnboardingStore()
 
   // Navigate to the first step on mount if we're on the base route
   useEffect(() => {
@@ -54,16 +48,10 @@ function RouteComponent() {
 
   const handleNextStep = () => {
     setCurrentStepIndex(currentStepIndex + 1)
-    // if (nextStep?.route) {
-    //   navigate({ to: `${nextStep.route}` })
-    // }
   }
 
   const handlePrevStep = () => {
     setCurrentStepIndex(currentStepIndex - 1)
-    // if (previousStep?.route) {
-    //   navigate({ to: `${previousStep.route}` })
-    // }
   }
 
   return (
@@ -99,7 +87,6 @@ function RouteComponent() {
           </div>
         </OnboardingNavigationContext.Provider>
       </div>
-      {/* {JSON.stringify(currentStep)} */}
     </div>
   )
 }

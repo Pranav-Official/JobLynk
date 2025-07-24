@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { StatusCodes, getReasonPhrase } from "http-status-codes";
 import jobService from "../services/jobs.service";
+import recruiterService from "../services/recruiter.service";
 import { JobStatus } from "../constants/enums";
 import ApiError from "../utils/ApiError";
 
@@ -8,8 +9,18 @@ class JobController {
   public createJob = async (req: Request, res: Response): Promise<void> => {
     try {
       const jobAttributes = req.body;
+      const userId = req.userId;
+      if (!userId) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "User ID is required.");
+      }
+      const recruiter = await recruiterService.getRecruiter(userId);
+      jobAttributes.recruiterId = recruiter.id;
       const job = await jobService.createJob(jobAttributes);
-      res.status(StatusCodes.CREATED).json(job);
+
+      res.status(StatusCodes.CREATED).json({
+        data: job,
+        message: "Job created successfully.",
+      });
     } catch (error: any) {
       if (error instanceof ApiError) {
         res.status(error.statusCode).json({ message: error.message });

@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { StatusCodes, getReasonPhrase } from "http-status-codes";
 import recruiterService from "../services/recruiter.service";
+import jobService from "../services/jobs.service";
 import ApiError from "../utils/ApiError";
 
 class RecruiterController {
@@ -10,12 +11,12 @@ class RecruiterController {
   ): Promise<void> => {
     try {
       const updates = req.body;
-      const { userId } = updates;
-
+      const userId = req.userId;
+      console.log("recruiter patch updates", updates);
       if (!userId) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "User ID is required.");
       }
-      if (Object.keys(updates).length <= 1) {
+      if (Object.keys(updates).length < 1) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "No updates provided.");
       }
 

@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
 interface UserState {
   firstName: string
@@ -11,15 +12,25 @@ interface UserState {
     email: string,
     role: string,
   ) => void
+  clearUserData: () => void
 }
 
-const useUserStore = create<UserState>((set) => ({
-  firstName: '',
-  lastName: '',
-  email: '',
-  role: '',
-  setUserData: (firstName, lastName, email, role) =>
-    set({ firstName, lastName, email, role }),
-}))
+const useUserStore = create<UserState>()(
+  persist(
+    (set) => ({
+      firstName: '',
+      lastName: '',
+      email: '',
+      role: '',
+      setUserData: (firstName, lastName, email, role) =>
+        set({ firstName, lastName, email, role }),
+      clearUserData: () =>
+        set({ firstName: '', lastName: '', email: '', role: '' }),
+    }),
+    {
+      name: 'user-storage',
+    },
+  ),
+)
 
 export default useUserStore

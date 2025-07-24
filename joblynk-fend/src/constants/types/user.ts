@@ -1,3 +1,6 @@
+import type { RecruiterAttributes } from './recruiter'
+import type { SeekerAttributes } from './seeker'
+
 export interface OnboardingStep {
   id: string
   title: string
@@ -8,3 +11,17 @@ export interface OnboardingStep {
 }
 
 export type UserRole = 'seeker' | 'recruiter' | ''
+
+export interface User {
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+  role: UserRole
+}
+
+export interface UserProfile {
+  user: User
+  recruiter?: RecruiterAttributes
+  seeker?: SeekerAttributes
+}

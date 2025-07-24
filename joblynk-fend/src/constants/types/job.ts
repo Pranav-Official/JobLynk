@@ -41,7 +41,7 @@ export const JobTableName = 'jobs'
 
 export type JobItem = {
   id?: string
-  recruiterId: number
+  recruiterId: string
   title: string
   descriptionMarkdown: string
   location: string

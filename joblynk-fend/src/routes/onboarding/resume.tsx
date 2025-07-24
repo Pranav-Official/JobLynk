@@ -1,10 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useContext, useState } from 'react'
 import {
+  faCheck,
   faChevronLeft,
   faChevronRight,
   faFileUpload,
-  faCheck,
   faTimes,
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -28,16 +28,16 @@ function RouteComponent() {
     isSuccess: uploadSuccess,
     error: uploadErrorData,
   } = useMutation({
-    mutationFn: async (file: File) => {
-      const presignedRes = await portPresignedURL(file)
+    mutationFn: async (fileSelected: File) => {
+      const presignedRes = await portPresignedURL(fileSelected)
       const { url, fields, key } = presignedRes.data
 
       const formData = new FormData()
       Object.entries(fields).forEach(([k, v]) =>
-        formData.append(k, v as string)
+        formData.append(k, v as string),
       )
-      formData.append('Content-Type', file.type)
-      formData.append('file', file)
+      formData.append('Content-Type', fileSelected.type)
+      formData.append('file', fileSelected)
 
       await uploadFileToS3(url, formData)
       await updateSeekerResume(key)
@@ -88,15 +88,17 @@ function RouteComponent() {
         <div className="flex flex-col items-center justify-center">
           <div
             className={`flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg transition-all duration-200 ease-in-out w-full max-w-md min-h-[200px]
-              ${file
-                ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-500'
-                : 'border-gray-300 bg-white hover:border-blue-400'
+              ${
+                file
+                  ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-500'
+                  : 'border-gray-300 bg-white hover:border-blue-400'
               }`}
           >
             <FontAwesomeIcon
               icon={faFileUpload}
-              className={`text-5xl mb-4 ${file ? 'text-blue-600' : 'text-gray-400'
-                }`}
+              className={`text-5xl mb-4 ${
+                file ? 'text-blue-600' : 'text-gray-400'
+              }`}
             />
 
             <input
@@ -110,12 +112,14 @@ function RouteComponent() {
 
             <label
               htmlFor="resume-upload"
-              className={`cursor-pointer text-center ${isUploading ? 'pointer-events-none' : ''
-                }`}
+              className={`cursor-pointer text-center ${
+                isUploading ? 'pointer-events-none' : ''
+              }`}
             >
               <span
-                className={`text-xl font-semibold block mb-2 ${file ? 'text-blue-700' : 'text-gray-800'
-                  }`}
+                className={`text-xl font-semibold block mb-2 ${
+                  file ? 'text-blue-700' : 'text-gray-800'
+                }`}
               >
                 {file ? file.name : 'Choose Resume File'}
               </span>
@@ -151,8 +155,7 @@ function RouteComponent() {
           {uploadError && (
             <p className="mt-4 text-red-600 text-center">
               <FontAwesomeIcon icon={faTimes} className="mr-2" />
-              Upload failed:{' '}
-              {uploadErrorData?.message || 'Please try again.'}
+              Upload failed: {uploadErrorData.message || 'Please try again.'}
             </p>
           )}
 
@@ -169,10 +172,11 @@ function RouteComponent() {
         <button
           disabled={navContext?.currentStep.hidePrevious || isUploading}
           onClick={navContext?.handlePrevStep}
-          className={`px-4 py-2 rounded-md transition-colors duration-200 ${navContext?.currentStep.hidePrevious || isUploading
-            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            : 'bg-blue-500 text-white hover:bg-blue-600'
-            }`}
+          className={`px-4 py-2 rounded-md transition-colors duration-200 ${
+            navContext?.currentStep.hidePrevious || isUploading
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-blue-500 text-white hover:bg-blue-600'
+          }`}
         >
           <FontAwesomeIcon icon={faChevronLeft} className="mr-2" />
           Previous
@@ -181,10 +185,11 @@ function RouteComponent() {
         <button
           disabled={isNextButtonDisabled}
           onClick={onValidSubmit}
-          className={`px-4 py-2 rounded-md transition-colors duration-200 ${isNextButtonDisabled
-            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            : 'bg-blue-500 text-white hover:bg-blue-600'
-            }`}
+          className={`px-4 py-2 rounded-md transition-colors duration-200 ${
+            isNextButtonDisabled
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-blue-500 text-white hover:bg-blue-600'
+          }`}
         >
           {isUploading ? 'Uploading...' : 'Next'}
           <FontAwesomeIcon icon={faChevronRight} className="ml-2" />

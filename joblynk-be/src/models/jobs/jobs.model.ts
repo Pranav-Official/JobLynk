@@ -5,7 +5,7 @@ import type { JobTypeType, JobStatusType } from "../../constants/enums";
 // Interface for Job attributes
 export interface JobAttributes {
   id?: string;
-  recruiterId: number;
+  recruiterId: string;
   title: string;
   descriptionMarkdown: string;
   location: string;
@@ -36,8 +36,14 @@ export default (sequelize: Sequelize, dataTypes: typeof DataTypes) => {
         defaultValue: DataTypes.UUIDV4, // Example: automatically generate UUIDs
       },
       recruiterId: {
-        type: dataTypes.INTEGER,
+        type: dataTypes.STRING(36),
         allowNull: false,
+        references: {
+          model: "recruiters", // This references the table name of the User model
+          key: "id",
+        },
+        onUpdate: "CASCADE", // If User's ID changes, update here
+        onDelete: "CASCADE", // If User is deleted, delete Recruiter profile
       },
       title: {
         type: new dataTypes.STRING(255),

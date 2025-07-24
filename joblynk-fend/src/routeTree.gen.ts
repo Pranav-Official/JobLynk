@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as RedirectRouteImport } from './routes/redirect'
 import { Route as JobsRouteImport } from './routes/jobs'
 import { Route as OnboardingRouteRouteImport } from './routes/onboarding/route'
+import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as OnboardingRoleRouteImport } from './routes/onboarding/role'
 import { Route as OnboardingResumeRouteImport } from './routes/onboarding/resume'
@@ -19,6 +20,9 @@ import { Route as OnboardingPersonalRouteImport } from './routes/onboarding/pers
 import { Route as OnboardingExitRouteImport } from './routes/onboarding/exit'
 import { Route as OnboardingEmploymentRouteImport } from './routes/onboarding/employment'
 import { Route as OnboardingCompanyRouteImport } from './routes/onboarding/company'
+import { Route as DashboardProfileRouteImport } from './routes/dashboard/profile'
+import { Route as DashboardJobsRouteImport } from './routes/dashboard/jobs'
+import { Route as DashboardApplicationsRouteImport } from './routes/dashboard/applications'
 
 const RedirectRoute = RedirectRouteImport.update({
   id: '/redirect',
@@ -33,6 +37,11 @@ const JobsRoute = JobsRouteImport.update({
 const OnboardingRouteRoute = OnboardingRouteRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRouteRoute = DashboardRouteRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -70,12 +79,31 @@ const OnboardingCompanyRoute = OnboardingCompanyRouteImport.update({
   path: '/company',
   getParentRoute: () => OnboardingRouteRoute,
 } as any)
+const DashboardProfileRoute = DashboardProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardJobsRoute = DashboardJobsRouteImport.update({
+  id: '/jobs',
+  path: '/jobs',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardApplicationsRoute = DashboardApplicationsRouteImport.update({
+  id: '/applications',
+  path: '/applications',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRouteRouteWithChildren
   '/onboarding': typeof OnboardingRouteRouteWithChildren
   '/jobs': typeof JobsRoute
   '/redirect': typeof RedirectRoute
+  '/dashboard/applications': typeof DashboardApplicationsRoute
+  '/dashboard/jobs': typeof DashboardJobsRoute
+  '/dashboard/profile': typeof DashboardProfileRoute
   '/onboarding/company': typeof OnboardingCompanyRoute
   '/onboarding/employment': typeof OnboardingEmploymentRoute
   '/onboarding/exit': typeof OnboardingExitRoute
@@ -85,9 +113,13 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRouteRouteWithChildren
   '/onboarding': typeof OnboardingRouteRouteWithChildren
   '/jobs': typeof JobsRoute
   '/redirect': typeof RedirectRoute
+  '/dashboard/applications': typeof DashboardApplicationsRoute
+  '/dashboard/jobs': typeof DashboardJobsRoute
+  '/dashboard/profile': typeof DashboardProfileRoute
   '/onboarding/company': typeof OnboardingCompanyRoute
   '/onboarding/employment': typeof OnboardingEmploymentRoute
   '/onboarding/exit': typeof OnboardingExitRoute
@@ -98,9 +130,13 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRouteRouteWithChildren
   '/onboarding': typeof OnboardingRouteRouteWithChildren
   '/jobs': typeof JobsRoute
   '/redirect': typeof RedirectRoute
+  '/dashboard/applications': typeof DashboardApplicationsRoute
+  '/dashboard/jobs': typeof DashboardJobsRoute
+  '/dashboard/profile': typeof DashboardProfileRoute
   '/onboarding/company': typeof OnboardingCompanyRoute
   '/onboarding/employment': typeof OnboardingEmploymentRoute
   '/onboarding/exit': typeof OnboardingExitRoute
@@ -112,9 +148,13 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/dashboard'
     | '/onboarding'
     | '/jobs'
     | '/redirect'
+    | '/dashboard/applications'
+    | '/dashboard/jobs'
+    | '/dashboard/profile'
     | '/onboarding/company'
     | '/onboarding/employment'
     | '/onboarding/exit'
@@ -124,9 +164,13 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/dashboard'
     | '/onboarding'
     | '/jobs'
     | '/redirect'
+    | '/dashboard/applications'
+    | '/dashboard/jobs'
+    | '/dashboard/profile'
     | '/onboarding/company'
     | '/onboarding/employment'
     | '/onboarding/exit'
@@ -136,9 +180,13 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/dashboard'
     | '/onboarding'
     | '/jobs'
     | '/redirect'
+    | '/dashboard/applications'
+    | '/dashboard/jobs'
+    | '/dashboard/profile'
     | '/onboarding/company'
     | '/onboarding/employment'
     | '/onboarding/exit'
@@ -149,6 +197,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
   OnboardingRouteRoute: typeof OnboardingRouteRouteWithChildren
   JobsRoute: typeof JobsRoute
   RedirectRoute: typeof RedirectRoute
@@ -175,6 +224,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -226,8 +282,45 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingCompanyRouteImport
       parentRoute: typeof OnboardingRouteRoute
     }
+    '/dashboard/profile': {
+      id: '/dashboard/profile'
+      path: '/profile'
+      fullPath: '/dashboard/profile'
+      preLoaderRoute: typeof DashboardProfileRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/jobs': {
+      id: '/dashboard/jobs'
+      path: '/jobs'
+      fullPath: '/dashboard/jobs'
+      preLoaderRoute: typeof DashboardJobsRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/applications': {
+      id: '/dashboard/applications'
+      path: '/applications'
+      fullPath: '/dashboard/applications'
+      preLoaderRoute: typeof DashboardApplicationsRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
   }
 }
+
+interface DashboardRouteRouteChildren {
+  DashboardApplicationsRoute: typeof DashboardApplicationsRoute
+  DashboardJobsRoute: typeof DashboardJobsRoute
+  DashboardProfileRoute: typeof DashboardProfileRoute
+}
+
+const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
+  DashboardApplicationsRoute: DashboardApplicationsRoute,
+  DashboardJobsRoute: DashboardJobsRoute,
+  DashboardProfileRoute: DashboardProfileRoute,
+}
+
+const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
+  DashboardRouteRouteChildren,
+)
 
 interface OnboardingRouteRouteChildren {
   OnboardingCompanyRoute: typeof OnboardingCompanyRoute
@@ -253,6 +346,7 @@ const OnboardingRouteRouteWithChildren = OnboardingRouteRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DashboardRouteRoute: DashboardRouteRouteWithChildren,
   OnboardingRouteRoute: OnboardingRouteRouteWithChildren,
   JobsRoute: JobsRoute,
   RedirectRoute: RedirectRoute,
