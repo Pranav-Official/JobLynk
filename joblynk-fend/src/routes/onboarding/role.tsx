@@ -12,6 +12,7 @@ import { OnboardingNavigationContext } from './route'
 import type { UserRole } from '@/constants/types/user'
 import { useOnboardingStore } from '@/stores/onboardingStore'
 import { updateUserRole } from '@/services/user' // Assuming updateUserRole is in '@/services/user'
+import useUserStore from '@/stores/userStore'
 
 export const Route = createFileRoute('/onboarding/role')({
   component: RouteComponent,
@@ -20,6 +21,7 @@ export const Route = createFileRoute('/onboarding/role')({
 function RouteComponent() {
   const navContext = useContext(OnboardingNavigationContext)
   const { currentRole, setRole } = useOnboardingStore()
+  const { setUserRole } = useUserStore()
   const [userType, setUserType] = useState<UserRole>(currentRole)
 
   const {
@@ -32,6 +34,7 @@ function RouteComponent() {
     mutationFn: (role: UserRole) => updateUserRole(role),
     onSuccess: (data) => {
       console.log('User role updated successfully:', data)
+      setUserRole(userType)
       setRole(userType)
       navContext?.handleNextStep()
     },
@@ -70,23 +73,20 @@ function RouteComponent() {
             onClick={() => setUserType('seeker')}
             disabled={isUpdatingRole}
             className={`flex flex-col items-center justify-center p-8 border-2 rounded-lg cursor-pointer transition-all duration-200 ease-in-out
-              ${
-                userType === 'seeker'
-                  ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-500 shadow-lg'
-                  : 'border-gray-300 bg-white hover:border-blue-400 hover:shadow-md'
+              ${userType === 'seeker'
+                ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-500 shadow-lg'
+                : 'border-gray-300 bg-white hover:border-blue-400 hover:shadow-md'
               }
               w-full md:w-1/2 min-h-[180px]`}
           >
             <FontAwesomeIcon
               icon={faBriefcase}
-              className={`text-5xl mb-4 ${
-                userType === 'seeker' ? 'text-blue-600' : 'text-gray-500'
-              }`}
+              className={`text-5xl mb-4 ${userType === 'seeker' ? 'text-blue-600' : 'text-gray-500'
+                }`}
             />
             <span
-              className={`text-xl font-semibold ${
-                userType === 'seeker' ? 'text-blue-700' : 'text-gray-800'
-              }`}
+              className={`text-xl font-semibold ${userType === 'seeker' ? 'text-blue-700' : 'text-gray-800'
+                }`}
             >
               Job Seeker
             </span>
@@ -100,23 +100,20 @@ function RouteComponent() {
             onClick={() => setUserType('recruiter')}
             disabled={isUpdatingRole}
             className={`flex flex-col items-center justify-center p-8 border-2 rounded-lg cursor-pointer transition-all duration-200 ease-in-out
-              ${
-                userType === 'recruiter'
-                  ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-500 shadow-lg'
-                  : 'border-gray-300 bg-white hover:border-blue-400 hover:shadow-md'
+              ${userType === 'recruiter'
+                ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-500 shadow-lg'
+                : 'border-gray-300 bg-white hover:border-blue-400 hover:shadow-md'
               }
               w-full md:w-1/2 min-h-[180px]`}
           >
             <FontAwesomeIcon
               icon={faUserTie}
-              className={`text-5xl mb-4 ${
-                userType === 'recruiter' ? 'text-blue-600' : 'text-gray-500'
-              }`}
+              className={`text-5xl mb-4 ${userType === 'recruiter' ? 'text-blue-600' : 'text-gray-500'
+                }`}
             />
             <span
-              className={`text-xl font-semibold ${
-                userType === 'recruiter' ? 'text-blue-700' : 'text-gray-800'
-              }`}
+              className={`text-xl font-semibold ${userType === 'recruiter' ? 'text-blue-700' : 'text-gray-800'
+                }`}
             >
               Recruiter
             </span>
@@ -150,11 +147,10 @@ function RouteComponent() {
         <button
           disabled={navContext?.currentStep.hidePrevious || isUpdatingRole}
           onClick={navContext?.handlePrevStep}
-          className={`px-4 py-2 rounded-md transition-colors duration-200 ${
-            navContext?.currentStep.hidePrevious || isUpdatingRole
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-blue-500 text-white hover:bg-blue-600'
-          }`}
+          className={`px-4 py-2 rounded-md transition-colors duration-200 ${navContext?.currentStep.hidePrevious || isUpdatingRole
+            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            : 'bg-blue-500 text-white hover:bg-blue-600'
+            }`}
         >
           <FontAwesomeIcon icon={faChevronLeft} className="mr-2" />
           Previous
@@ -163,11 +159,10 @@ function RouteComponent() {
         <button
           disabled={isNextButtonDisabled}
           onClick={onValidSubmit}
-          className={`px-4 py-2 rounded-md transition-colors duration-200 ${
-            isNextButtonDisabled
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-blue-500 text-white hover:bg-blue-600'
-          }`}
+          className={`px-4 py-2 rounded-md transition-colors duration-200 ${isNextButtonDisabled
+            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            : 'bg-blue-500 text-white hover:bg-blue-600'
+            }`}
         >
           {isUpdatingRole ? 'Saving...' : 'Next'}
           <FontAwesomeIcon icon={faChevronRight} className="ml-2" />

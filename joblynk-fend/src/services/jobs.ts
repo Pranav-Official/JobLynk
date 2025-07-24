@@ -21,32 +21,8 @@ export const getJobs = async (
 }
 
 export const createJob = async (
-  title: string,
-  descriptionMarkdown: string,
-  location: string,
-  jobType: JobTypeType,
-  status: JobStatusType,
-  easyApply: boolean,
-  applyUrl: string,
-  salaryMin?: number | null,
-  salaryMax?: number | null,
-  salaryCurrency?: string | null,
-  postedAt?: Date | null,
-  expiresAt?: Date | null,
+  jobData: JobItem, // Now accepts a single JobItem object
 ): Promise<ApiResponse<JobItem>> => {
-  const apiResponse = await api.post(`${JOBS_LIST_ENDPOINT}`, {
-    title,
-    descriptionMarkdown,
-    location,
-    jobType,
-    salaryMin,
-    salaryMax,
-    salaryCurrency,
-    applyUrl,
-    status,
-    postedAt,
-    expiresAt,
-    easyApply,
-  })
+  const apiResponse = await api.post(`${JOBS_LIST_ENDPOINT}`, jobData) // Pass the entire jobData object
   return apiResponse.data
 }

@@ -13,6 +13,7 @@ interface UserState {
     role: string,
   ) => void
   clearUserData: () => void
+  setUserRole: (role: string) => void
 }
 
 const useUserStore = create<UserState>()(
@@ -26,6 +27,7 @@ const useUserStore = create<UserState>()(
         set({ firstName, lastName, email, role }),
       clearUserData: () =>
         set({ firstName: '', lastName: '', email: '', role: '' }),
+      setUserRole: (role) => set({ role }),
     }),
     {
       name: 'user-storage',

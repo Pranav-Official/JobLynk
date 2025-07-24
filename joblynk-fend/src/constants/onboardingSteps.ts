@@ -22,7 +22,7 @@ const onboardingSteps: Array<OnboardingStep> = [
     title: 'Employment Status',
     route: '/onboarding/employment',
     role: ['seeker'],
-    hidePrevious: false,
+    hidePrevious: true,
     hideNext: false,
   },
   {
@@ -38,7 +38,7 @@ const onboardingSteps: Array<OnboardingStep> = [
     title: 'Which company are you recruiting for?',
     route: '/onboarding/company',
     role: ['recruiter'],
-    hidePrevious: false,
+    hidePrevious: true,
     hideNext: false,
   },
   {

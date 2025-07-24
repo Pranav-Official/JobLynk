@@ -23,7 +23,7 @@ import type { JobItem } from '@/constants/types/job'
 import { CreateJobForm } from '@/components/createJobForm'
 import { Modal } from '@/components/modal' // Adjust import path
 import { JobStatus, JobType } from '@/constants/enums'
-import { getJobs } from '@/services/jobs' // Assuming you have a createJob service
+import { createJob, getJobs } from '@/services/jobs' // Assuming you have a createJob service
 
 export const Route = createFileRoute('/dashboard/jobs')({
   component: RouteComponent,
@@ -39,18 +39,18 @@ function RouteComponent() {
   })
 
   // Mutation for creating a new job
-  // const createJobMutation = useMutation({
-  //   mutationFn: createJob, // This function should take the new job data as an argument
-  //   onSuccess: () => {
-  //     queryClient.invalidateQueries({ queryKey: ['recuiter/jobs'] }) // Invalidate and refetch jobs
-  //     setIsCreateModalOpen(false) // Close the modal on success
-  //     alert('Job created successfully!')
-  //   },
-  //   onError: (error) => {
-  //     console.error('Error creating job:', error)
-  //     alert(`Failed to create job: ${error.message || 'Unknown error'}`)
-  //   },
-  // })
+  const createJobMutation = useMutation({
+    mutationFn: createJob, // This function should take the new job data as an argument
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['recuiter/jobs'] }) // Invalidate and refetch jobs
+      setIsCreateModalOpen(false) // Close the modal on success
+      alert('Job created successfully!')
+    },
+    onError: (error) => {
+      console.error('Error creating job:', error)
+      alert(`Failed to create job: ${error.message || 'Unknown error'}`)
+    },
+  })
 
   const handleView = (jobId: string | undefined) => {
     console.log(`View job with ID: ${jobId}`)
@@ -84,11 +84,9 @@ function RouteComponent() {
       // recruiterId would typically come from your authenticated user's context
       recruiterId: 'example-recruiter-id', // Placeholder, replace with actual ID
       postedAt: new Date(), // Set current date as postedAt
-      createdAt: new Date(),
-      updatedAt: new Date(),
     }
     console.log('Submitting new job:', newJobData)
-    // createJobMutation.mutate(newJobData)
+    createJobMutation.mutate(newJobData)
   }
 
   const columns = useMemo(
@@ -156,15 +154,14 @@ function RouteComponent() {
         header: 'Status',
         cell: (info: any) => (
           <span
-            className={`px-2 py-1 rounded-full text-xs font-semibold ${
-              info.getValue() === JobStatus.ACTIVE
-                ? 'bg-green-100 text-green-800'
-                : info.getValue() === JobStatus.DRAFT
-                  ? 'bg-yellow-100 text-yellow-800'
-                  : info.getValue() === JobStatus.EXPIRED
-                    ? 'bg-red-100 text-red-800'
-                    : 'bg-gray-100 text-gray-800' // For FILLED status
-            }`}
+            className={`px-2 py-1 rounded-full text-xs font-semibold ${info.getValue() === JobStatus.ACTIVE
+              ? 'bg-green-100 text-green-800'
+              : info.getValue() === JobStatus.DRAFT
+                ? 'bg-yellow-100 text-yellow-800'
+                : info.getValue() === JobStatus.EXPIRED
+                  ? 'bg-red-100 text-red-800'
+                  : 'bg-gray-100 text-gray-800' // For FILLED status
+              }`}
           >
             {info.getValue().charAt(0).toUpperCase() + info.getValue().slice(1)}
           </span>

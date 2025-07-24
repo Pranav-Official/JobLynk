@@ -2,7 +2,6 @@ import { Model, DataTypes, Sequelize } from "sequelize";
 import { JobType, JobStatus, JobTableName } from "../../constants/enums";
 import type { JobTypeType, JobStatusType } from "../../constants/enums";
 
-// Interface for Job attributes
 export interface JobAttributes {
   id?: string;
   recruiterId: string;
@@ -18,39 +17,35 @@ export interface JobAttributes {
   postedAt?: Date | null;
   expiresAt?: Date | null;
   easyApply: boolean;
+  skills?: string[] | null;
 }
 
-// Define the Job class extending Sequelize's Model
-// Pass JobAttributes as the generic type to Model
-export class Job extends Model<JobAttributes> {
-  // Sequelize will handle these attributes automatically.
-}
+export class Job extends Model<JobAttributes> { }
 
-// Export a function that initializes the Job model
 export default (sequelize: Sequelize, dataTypes: typeof DataTypes) => {
   Job.init(
     {
       id: {
-        type: dataTypes.STRING(36), // Using STRING for UUIDs or similar string IDs
+        type: dataTypes.STRING(36),
         primaryKey: true,
-        defaultValue: DataTypes.UUIDV4, // Example: automatically generate UUIDs
+        defaultValue: DataTypes.UUIDV4,
       },
       recruiterId: {
         type: dataTypes.STRING(36),
         allowNull: false,
         references: {
-          model: "recruiters", // This references the table name of the User model
+          model: "recruiters",
           key: "id",
         },
-        onUpdate: "CASCADE", // If User's ID changes, update here
-        onDelete: "CASCADE", // If User is deleted, delete Recruiter profile
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
       },
       title: {
         type: new dataTypes.STRING(255),
         allowNull: false,
       },
       descriptionMarkdown: {
-        type: dataTypes.TEXT, // Or dataTypes.LONGTEXT if needed
+        type: dataTypes.TEXT,
         allowNull: false,
       },
       location: {
@@ -95,12 +90,17 @@ export default (sequelize: Sequelize, dataTypes: typeof DataTypes) => {
         allowNull: false,
         defaultValue: false,
       },
+      skills: {
+        type: dataTypes.ARRAY(dataTypes.STRING),
+        allowNull: true,
+        defaultValue: [],
+      },
     },
     {
       tableName: JobTableName,
-      sequelize, // passing the `sequelize` instance is required
-      timestamps: true, // Enables createdAt and updatedAt fields automatically
-      underscored: true, // Use snake_case for column names in the database
+      sequelize,
+      timestamps: true,
+      underscored: true,
     },
   );
 
