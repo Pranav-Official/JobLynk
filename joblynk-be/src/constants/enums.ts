@@ -17,3 +17,14 @@ export enum JobStatus {
 export type JobStatusType = JobStatus;
 
 export const JobTableName = "jobs";
+
+export enum ApplicationStatus {
+  APPLIED = "Applied",
+  REVIEWED = "Reviewed",
+  INTERVIEWING = "Interviewing",
+  REJECTED = "Rejected",
+  HIRED = "Hired",
+  WITHDRAWN = "Withdrawn",
+}
+
+export type ApplicationStatusType = `${ApplicationStatus}`;

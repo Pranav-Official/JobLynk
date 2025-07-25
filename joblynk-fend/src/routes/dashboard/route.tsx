@@ -13,7 +13,6 @@ import {
   faUser,
 } from '@fortawesome/free-solid-svg-icons'
 import useUserStore from '@/stores/userStore'
-import { FCPThresholds } from 'web-vitals'
 
 export const Route = createFileRoute('/dashboard')({
   beforeLoad: ({ context }) => {
@@ -84,17 +83,33 @@ function RouteComponent() {
             </button>
           )}
 
-          <button
-            className={`w-full flex items-center p-3 rounded-md text-xl font-medium transition-colors duration-200 ${
-              selectedMenuItem === 'applications'
-                ? 'bg-blue-600 text-white'
-                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-            }`}
-            onClick={() => selectPage('applications')}
-          >
-            <FontAwesomeIcon icon={faFileAlt} className="mr-3 w-5 h-5" />
-            Applications
-          </button>
+          {role === 'recruiter' && (
+            <button
+              className={`w-full flex items-center p-3 rounded-md text-xl font-medium transition-colors duration-200 ${
+                selectedMenuItem === 'applications'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+              }`}
+              onClick={() => selectPage('applications')}
+            >
+              <FontAwesomeIcon icon={faFileAlt} className="mr-3 w-5 h-5" />
+              Applications
+            </button>
+          )}
+
+          {role === 'seeker' && (
+            <button
+              className={`w-full flex items-center p-3 rounded-md text-xl font-medium transition-colors duration-200 ${
+                selectedMenuItem === 'myApplications'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+              }`}
+              onClick={() => selectPage('myApplications')}
+            >
+              <FontAwesomeIcon icon={faFileAlt} className="mr-3 w-5 h-5" />
+              My Applications
+            </button>
+          )}
         </nav>
       </div>
 

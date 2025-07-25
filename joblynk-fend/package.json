@@ -31,6 +31,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.60.0",
+    "react-hot-toast": "^2.5.2",
     "tailwindcss": "^4.0.6",
     "uploadthing": "^7.7.3",
     "zod": "^4.0.5",

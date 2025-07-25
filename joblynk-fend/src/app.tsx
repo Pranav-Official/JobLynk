@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from '@tanstack/react-router'
+import { Toaster } from 'react-hot-toast'
 import { router } from './router'
 import useStore from './stores/authStore'
 
@@ -21,6 +22,7 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} context={{ auth }} />
+      <Toaster position="top-right" />
     </QueryClientProvider>
   )
 }

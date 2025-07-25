@@ -12,28 +12,30 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faBriefcase,
   faEye,
-  faFileAlt,
   faSort,
   faSortDown,
   faSortUp,
 } from '@fortawesome/free-solid-svg-icons'
-import { useQuery } from '@tanstack/react-query'
-import type { RecruiterApplicationItem } from '@/constants/types/application'
-import { getRecruiterApplications } from '@/services/application'
-import { ApplicationStatus } from '@/constants/types/application'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import type { ApplicationItem } from '@/constants/types/application'
+import { getSeekerApplications } from '@/services/application'
+import { ApplicationStatus } from '@/constants/types/application' // Assuming you have this enum
 
-export const Route = createFileRoute('/dashboard/applications')({
+// Import your defined types
+
+export const Route = createFileRoute('/dashboard/myApplications')({
   component: RouteComponent,
 })
 
 function RouteComponent() {
+  const queryClient = useQueryClient()
   const {
     data: applicationResponse,
     isError,
     isLoading,
   } = useQuery({
-    queryKey: ['recruiter/applications'],
-    queryFn: () => getRecruiterApplications(),
+    queryKey: ['seeker/applications'],
+    queryFn: () => getSeekerApplications(),
   })
 
   const [globalFilter, setGlobalFilter] = useState('')
@@ -51,60 +53,25 @@ function RouteComponent() {
   const columns = useMemo(
     () => [
       {
-        accessorKey: 'job.title',
+        accessorKey: 'job.title', // Access nested property
         header: 'Job Title',
         cell: (info: any) => info.getValue(),
         enableSorting: true,
         enableColumnFilter: true,
       },
       {
-        accessorFn: (row: RecruiterApplicationItem) =>
-          row.seeker.user.firstName,
-        id: 'firstName',
-        header: 'First Name',
+        accessorKey: 'job.recruiter.companyName', // Access nested property for company name
+        header: 'Company',
         cell: (info: any) => info.getValue(),
         enableSorting: true,
         enableColumnFilter: true,
       },
       {
-        accessorFn: (row: RecruiterApplicationItem) => row.seeker.user.lastName,
-        id: 'lastName',
-        header: 'Last Name',
+        accessorKey: 'job.location', // Access nested property for location
+        header: 'Location',
         cell: (info: any) => info.getValue(),
         enableSorting: true,
         enableColumnFilter: true,
-      },
-      {
-        accessorFn: (row: RecruiterApplicationItem) => row.seeker.user.email,
-        id: 'email',
-        header: 'Email',
-        cell: (info: any) => info.getValue(),
-        enableSorting: true,
-        enableColumnFilter: true,
-      },
-      {
-        accessorFn: (row: RecruiterApplicationItem) => row.seeker.resumeUrl,
-        id: 'resume',
-        header: 'Resume',
-        cell: (info: any) => {
-          const resumeUrl = info.getValue()
-          if (resumeUrl) {
-            return (
-              <a
-                href={resumeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:underline flex items-center gap-1"
-              >
-                <FontAwesomeIcon icon={faFileAlt} />
-                View Resume
-              </a>
-            )
-          }
-          return 'N/A'
-        },
-        enableSorting: false,
-        enableColumnFilter: false,
       },
       {
         accessorKey: 'applicationDate',
@@ -209,7 +176,7 @@ function RouteComponent() {
       <div className="flex justify-between items-center mb-6 border-b pb-4">
         <h2 className="text-3xl font-bold text-gray-900 flex items-center">
           <FontAwesomeIcon icon={faBriefcase} className="mr-3 text-blue-600" />
-          Job Applications
+          My Job Applications
         </h2>
       </div>
 

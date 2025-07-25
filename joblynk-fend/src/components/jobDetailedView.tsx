@@ -1,5 +1,5 @@
 // components/JobDetailedView.tsx
-import React from 'react'
+import React, { useState } from 'react' // Import useState
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faBookmark,
@@ -10,16 +10,40 @@ import {
   faMapMarkerAlt,
   faShare,
 } from '@fortawesome/free-solid-svg-icons'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import toast from 'react-hot-toast'
+import ConfirmationPopup from './confirmationPopup' // Import the new component
 import type { JobItem } from '@/constants/types/job'
+import type { ApiResponse } from '@/constants/types/api'
+import type { AxiosError } from 'axios'
 import { JobType } from '@/constants/types/job'
 import { getDetailedJob } from '@/services/jobs'
+import { createApplication } from '@/services/application'
 
 interface JobDetailedViewProps {
   job: JobItem | null
 }
 
 const JobDetailedView: React.FC<JobDetailedViewProps> = ({ job }) => {
+  const [showApplyConfirmation, setShowApplyConfirmation] = useState(false) // State for popup
+  const {
+    mutate: applyJobMutation,
+    isPending: isApplyingJob,
+    isError: applyJobError,
+    isSuccess: applyJobSuccess,
+    error: applyJobErrorData,
+  } = useMutation({
+    mutationFn: (jobId: string) => createApplication(jobId),
+    onSuccess: (data) => {
+      console.log('Application created successfully:', data)
+      toast.success('Application created successfully!')
+    },
+    onError: (error: AxiosError<ApiResponse<any>>) => {
+      console.error('Failed to save company details:', error)
+      toast.error(error.response?.data.message ?? 'An error occurred')
+    },
+  })
+
   const {
     data: detailedJob,
     isLoading,
@@ -132,12 +156,14 @@ const JobDetailedView: React.FC<JobDetailedViewProps> = ({ job }) => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'ACTIVE':
+      case 'active':
         return 'bg-green-100 text-green-800'
-      case 'CLOSED':
+      case 'expired':
         return 'bg-red-100 text-red-800'
-      case 'DRAFT':
+      case 'draft':
         return 'bg-yellow-100 text-yellow-800'
+      case 'filled':
+        return 'bg-blue-100 text-blue-800'
       default:
         return 'bg-gray-100 text-gray-800'
     }
@@ -148,9 +174,24 @@ const JobDetailedView: React.FC<JobDetailedViewProps> = ({ job }) => {
   }
 
   const handleApplyClick = () => {
-    if (detailedJob.applyUrl) {
+    if (!detailedJob.applyUrl || detailedJob.status !== 'active') {
+      return // Prevent action if not applicable
+    }
+
+    if (detailedJob.easyApply) {
+      setShowApplyConfirmation(true) // Show confirmation for Easy Apply
+    } else {
       window.open(detailedJob.applyUrl, '_blank', 'noopener,noreferrer')
     }
+  }
+
+  const handleConfirmEasyApply = () => {
+    applyJobMutation(detailedJob.id)
+    setShowApplyConfirmation(false) // Close popup
+  }
+
+  const handleCancelEasyApply = () => {
+    setShowApplyConfirmation(false) // Close popup
   }
 
   return (
@@ -228,11 +269,12 @@ const JobDetailedView: React.FC<JobDetailedViewProps> = ({ job }) => {
         {/* Apply Button */}
         <button
           onClick={handleApplyClick}
-          disabled={!detailedJob.applyUrl || detailedJob.status !== 'active'}
-          className={`w-full py-3 px-6 rounded-lg font-medium transition-colors mb-8 flex items-center justify-center gap-2 ${detailedJob.applyUrl && detailedJob.status === 'active'
-            ? 'bg-blue-600 text-white hover:bg-blue-700'
-            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            }`}
+          disabled={detailedJob.status !== 'active'} // Ensure status is 'active'
+          className={`w-full py-3 px-6 rounded-lg font-medium transition-colors mb-8 flex items-center justify-center gap-2 ${
+            detailedJob.status === 'active'
+              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+          }`}
         >
           {detailedJob.easyApply ? 'Easy Apply' : 'Apply Now'}
           {detailedJob.applyUrl && !detailedJob.easyApply && (
@@ -300,6 +342,17 @@ const JobDetailedView: React.FC<JobDetailedViewProps> = ({ job }) => {
           </div>
         </section>
       </div>
+
+      {/* Confirmation Popup */}
+      {showApplyConfirmation && detailedJob.easyApply && (
+        <ConfirmationPopup
+          title="Confirm Easy Apply"
+          message={`Are you sure you want to apply for "${detailedJob.title}" with your saved profile?`}
+          onCancel={handleCancelEasyApply}
+          onConfirm={handleConfirmEasyApply}
+          confirmButtonText="Yes, Apply"
+        />
+      )}
     </div>
   )
 }

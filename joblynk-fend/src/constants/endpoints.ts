@@ -14,4 +14,8 @@ export const USER_ROLE_ENDPOINT = '/user/role'
 export const SEEKER_ENDPOINT = '/seeker'
 export const RECRITER_ENDPOINT = '/recruiter'
 
+export const APPLICATION_ENDPOINT = '/application'
+
+export const APPLICATION_RECRITER_ENDPOINT = '/application/recruiter'
+
 export const getFullApiUrl = (endpoint: string) => `${API_BASE_URL}${endpoint}`
