@@ -15,4 +15,10 @@ router.get(
   applicationController.getRecruiterApplications,
 );
 
+router.put(
+  "/recruiter/:id",
+  checkRole("recruiter"),
+  applicationController.updateApplicationStatus,
+);
+
 export default router;

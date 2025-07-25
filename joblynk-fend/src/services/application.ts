@@ -28,3 +28,16 @@ export const getRecruiterApplications = async (): Promise<
   const response = await api.get(`${APPLICATION_RECRITER_ENDPOINT}`)
   return response.data
 }
+
+export const updateApplicationStatusByRecruiter = async (
+  applicationId: string,
+  status: string,
+): Promise<any> => {
+  const response = await api.put(
+    `${APPLICATION_RECRITER_ENDPOINT}/${applicationId}`,
+    {
+      status,
+    },
+  )
+  return response.data
+}

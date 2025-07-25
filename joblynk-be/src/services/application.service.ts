@@ -163,6 +163,33 @@ class ApplicationService {
       totalPages,
     };
   }
+
+  async getApplicationById(id: string): Promise<any> {
+    const application = await db.Application.findByPk(id, {
+      include: [
+        {
+          model: db.Jobs,
+          as: "job",
+          attributes: ["id", "title", "location", "jobType", "recruiterId"],
+          required: true,
+        },
+        {
+          model: db.Seeker,
+          as: "seeker",
+          attributes: ["id", "employmentStatus", "resumeUrl"],
+          include: [
+            {
+              model: db.User,
+              as: "user",
+              attributes: ["id", "firstName", "lastName", "email"],
+            },
+          ],
+        },
+      ],
+    });
+
+    return application?.get({ plain: true }) || null;
+  }
 }
 
 export default new ApplicationService();

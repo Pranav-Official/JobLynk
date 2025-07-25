@@ -146,6 +146,67 @@ class ApplicationController {
       }
     }
   }
+
+  public async updateApplicationStatus(
+    req: Request,
+    res: Response,
+  ): Promise<void> {
+    try {
+      const userId = req.userId;
+      const applicationId = req.params.id;
+      const status = req.body.status;
+
+      if (!userId) {
+        throw new ApiError(StatusCodes.UNAUTHORIZED, "User ID missing.");
+      }
+
+      const user = await userService.getUser(userId);
+      if (!user || !user.recruiter || !user.recruiter.id) {
+        throw new ApiError(
+          StatusCodes.BAD_REQUEST,
+          "Recruiter profile not found.",
+        );
+      }
+
+      const recruiterId = user.recruiter.id;
+
+      const application = await applicationService.getApplicationById(
+        applicationId || "",
+      );
+
+      if (!application) {
+        throw new ApiError(StatusCodes.NOT_FOUND, "Application not found.");
+      }
+
+      if (application.job.recruiterId !== recruiterId) {
+        throw new ApiError(
+          StatusCodes.FORBIDDEN,
+          "You are not authorized to update this application.",
+        );
+      }
+
+      const updatedApplication =
+        await applicationService.updateApplicationStatus(
+          applicationId || "",
+          status,
+        );
+
+      res.status(StatusCodes.OK).json({
+        data: updatedApplication,
+        message: "Application status updated successfully.",
+      });
+    } catch (error: any) {
+      if (error instanceof ApiError) {
+        res.status(error.statusCode).json({ message: error.message });
+      } else {
+        console.error("Error in updateApplicationStatus:", error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+          message:
+            error.message || getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR),
+        });
+      }
+    }
+  }
 }
 
 export default new ApplicationController();

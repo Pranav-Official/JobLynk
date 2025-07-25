@@ -1,4 +1,4 @@
-import { useNavigate } from '@tanstack/react-router'
+import { useNavigate, useRouterState } from '@tanstack/react-router'
 import { useState } from 'react'
 import {
   AUTH_LOGIN_ENDPOINT,
@@ -9,6 +9,7 @@ import useStore from '../stores/authStore'
 
 export default function NavBar() {
   const navigate = useNavigate()
+  const routerState = useRouterState() // Get the current router state
   const loginUrl = getFullApiUrl(AUTH_LOGIN_ENDPOINT)
   const logoutUrl = getFullApiUrl(AUTH_LOGOUT_ENDPOINT)
   const [isLoading, setIsLoading] = useState(false)
@@ -27,6 +28,11 @@ export default function NavBar() {
     }
   }
 
+  const navItems = [
+    { name: 'Jobs', path: '/jobs' },
+    { name: 'Dashboard', path: '/dashboard' },
+  ]
+
   return (
     <header className="fixed top-0 w-full z-50 p-4 flex items-center justify-between bg-gray-100 text-gray-800 drop-shadow-lg">
       <nav className="flex items-center">
@@ -39,7 +45,20 @@ export default function NavBar() {
           </div>
         </div>
       </nav>
-      <div>
+      <div className="flex items-center space-x-4">
+        {navItems.map((item) => (
+          <div
+            key={item.name}
+            onClick={() => navigate({ to: item.path })}
+            className={`cursor-pointer px-3 py-1 rounded-md transition duration-300 ${
+              routerState.location.pathname.startsWith(item.path) // Changed this line
+                ? 'bg-blue-200 text-black'
+                : 'hover:bg-gray-200'
+            }`}
+          >
+            {item.name}
+          </div>
+        ))}
         <button
           className="bg-blue-600 text-white p-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300"
           onClick={handleAuthClick}
