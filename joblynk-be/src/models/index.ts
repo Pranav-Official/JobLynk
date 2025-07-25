@@ -7,6 +7,7 @@ import UserModelInitializer, { User } from "./user/user.model";
 import JobModelInitializer, { Job } from "./jobs/jobs.model";
 import SeekerModelInitializer, { Seeker } from "./user/seeker.model";
 import RecruiterModelInitializer, { Recruiter } from "./user/recruiter.model";
+import { defineAssociations } from "./assossiations";
 const dbConfig = config.database;
 
 const sequelize = new Sequelize(
@@ -38,6 +39,8 @@ db.User = UserModelInitializer(sequelize, DataTypes);
 db.Seeker = SeekerModelInitializer(sequelize, DataTypes);
 db.Recruiter = RecruiterModelInitializer(sequelize, DataTypes);
 db.Jobs = JobModelInitializer(sequelize, DataTypes);
+
+defineAssociations();
 
 // Assign sequelize instance and Sequelize class to the db object
 db.sequelize = sequelize;

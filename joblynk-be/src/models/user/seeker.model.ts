@@ -49,13 +49,5 @@ export default (sequelize: Sequelize, dataTypes: typeof DataTypes) => {
       underscored: true, // Use snake_case for column names in the database
     },
   );
-
-  // Define the association
-  // A Seeker belongs to one User
-  Seeker.belongsTo(User, {
-    foreignKey: "userId",
-    as: "user", // Alias for the association, e.g., seeker.user
-  });
-
   return Seeker;
 };

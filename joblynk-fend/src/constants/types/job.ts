@@ -1,3 +1,5 @@
+import type { RecruiterAttributes } from "./recruiter"
+
 // types/job.ts
 export interface Job {
   id: string
@@ -42,6 +44,8 @@ export const JobTableName = 'jobs'
 export type JobItem = {
   id?: string
   recruiterId: string
+  recruiter: RecruiterAttributes
+  company: string
   title: string
   descriptionMarkdown: string
   location: string

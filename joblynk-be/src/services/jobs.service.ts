@@ -106,6 +106,13 @@ class JobService {
       attributes: {
         exclude: ["descriptionMarkdown"],
       },
+      include: [
+        {
+          model: db.Recruiter,
+          as: "recruiter", // Ensure this matches the alias used in associations
+          attributes: ["id", "companyName", "companyUrl"], // Include only necessary fields
+        },
+      ],
     });
 
     const jobs = rows.map((row) => row.get({ plain: true }));
@@ -120,14 +127,21 @@ class JobService {
   }
 
   async getJobById(jobId: string): Promise<JobAttributes> {
-    const job = await db.Jobs.findByPk(jobId);
+    const job = await db.Jobs.findByPk(jobId, {
+      include: [
+        {
+          model: db.Recruiter,
+          as: "recruiter",
+        },
+      ],
+    });
 
     if (!job) {
       console.log("Job not found, jobs sdervice 126");
       throw new Error("Job not found");
     }
 
-    return job.get({ plain: true });
+    return job.toJSON();
   }
 }
 

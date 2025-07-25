@@ -9,7 +9,6 @@ import {
   faExternalLinkAlt,
   faMapMarkerAlt,
   faShare,
-  faUsers,
 } from '@fortawesome/free-solid-svg-icons'
 import { useQuery } from '@tanstack/react-query'
 import type { JobItem } from '@/constants/types/job'
@@ -166,7 +165,7 @@ const JobDetailedView: React.FC<JobDetailedViewProps> = ({ job }) => {
             <div className="flex items-center gap-2 mb-2">
               <FontAwesomeIcon icon={faBuilding} className="text-gray-500" />
               <span className="text-lg font-medium text-gray-700">
-                {detailedJob.companyName || 'Company Name'}
+                {detailedJob.recruiter.companyName || 'Company Name'}
               </span>
             </div>
             <div className="flex items-center gap-4 text-sm text-gray-500">
@@ -177,10 +176,6 @@ const JobDetailedView: React.FC<JobDetailedViewProps> = ({ job }) => {
               <div className="flex items-center gap-1">
                 <FontAwesomeIcon icon={faClock} />
                 <span>{formatPostedDate()}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <FontAwesomeIcon icon={faUsers} />
-                <span>Recruiter ID: {detailedJob.recruiterId}</span>
               </div>
             </div>
           </div>
@@ -234,11 +229,10 @@ const JobDetailedView: React.FC<JobDetailedViewProps> = ({ job }) => {
         <button
           onClick={handleApplyClick}
           disabled={!detailedJob.applyUrl || detailedJob.status !== 'active'}
-          className={`w-full py-3 px-6 rounded-lg font-medium transition-colors mb-8 flex items-center justify-center gap-2 ${
-            detailedJob.applyUrl && detailedJob.status === 'active'
-              ? 'bg-blue-600 text-white hover:bg-blue-700'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-          }`}
+          className={`w-full py-3 px-6 rounded-lg font-medium transition-colors mb-8 flex items-center justify-center gap-2 ${detailedJob.applyUrl && detailedJob.status === 'active'
+            ? 'bg-blue-600 text-white hover:bg-blue-700'
+            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
         >
           {detailedJob.easyApply ? 'Easy Apply' : 'Apply Now'}
           {detailedJob.applyUrl && !detailedJob.easyApply && (

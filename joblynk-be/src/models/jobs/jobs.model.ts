@@ -1,6 +1,7 @@
 import { Model, DataTypes, Sequelize } from "sequelize";
 import { JobType, JobStatus, JobTableName } from "../../constants/enums";
 import type { JobTypeType, JobStatusType } from "../../constants/enums";
+import { Recruiter } from "../user/recruiter.model";
 
 export interface JobAttributes {
   id?: string;

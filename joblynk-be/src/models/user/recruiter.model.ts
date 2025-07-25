@@ -1,5 +1,6 @@
 import { Model, DataTypes, Sequelize } from "sequelize";
 import { User } from "./user.model"; // Import the User model to establish the association
+import { Job } from "../jobs/jobs.model";
 
 // Interface for Recruiter attributes
 export interface RecruiterAttributes {
@@ -10,7 +11,7 @@ export interface RecruiterAttributes {
 }
 
 // Define the Recruiter class extending Sequelize's Model
-export class Recruiter extends Model<RecruiterAttributes> {}
+export class Recruiter extends Model<RecruiterAttributes> { }
 
 // Export a function that initializes the Recruiter model
 export default (sequelize: Sequelize, dataTypes: typeof DataTypes) => {
@@ -51,13 +52,6 @@ export default (sequelize: Sequelize, dataTypes: typeof DataTypes) => {
       underscored: true, // Use snake_case for column names in the database
     },
   );
-
-  // Define the association
-  // A Recruiter belongs to one User
-  Recruiter.belongsTo(User, {
-    foreignKey: "userId",
-    as: "user", // Alias for the association, e.g., recruiter.user
-  });
 
   return Recruiter;
 };
