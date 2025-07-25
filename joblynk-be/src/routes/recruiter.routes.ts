@@ -8,10 +8,4 @@ const router = Router();
 // Route to update recruiter profile
 router.patch("/", checkRole("recruiter"), recruiterController.updateRecruiter);
 
-router.get(
-  "/jobs/:recruiterId",
-  checkRole("recruiter"),
-  jobController.getPaginatedJobs,
-);
-
 export default router;

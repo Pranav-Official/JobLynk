@@ -24,14 +24,13 @@ export const getJobs = async (
 }
 
 export const getJobsForRecruiter = async (
-  recruiterId: string,
   page: number = 1,
   searchQuery: string = '',
   location: string = '',
   jobType: string = '',
 ): Promise<JobResponse> => {
   const apiResponse = await api.get(
-    `${JOBS_LIST_RECRUITER_ENDPOINT}/${recruiterId}?search=${searchQuery}&location=${location}&jobType=${jobType}&page=${page}`,
+    `${JOBS_LIST_RECRUITER_ENDPOINT}?search=${searchQuery}&location=${location}&jobType=${jobType}&page=${page}`,
   )
   return apiResponse.data.data
 }

@@ -11,15 +11,15 @@ router.post("/", [withAuth, checkRole("recruiter")], jobController.createJob);
 // Route to update a job by ID
 router.patch("/:jobId", jobController.updateJob);
 
+router.get(
+  "/recruiter",
+  [withAuth, checkRole("recruiter")],
+  jobController.getPaginatedRecruiterJobs,
+);
+
 router.get("/:jobId", jobController.getJobById);
 
 // Route to get a paginated list of jobs
 router.get("/", jobController.getPaginatedJobs);
-
-router.get(
-  "/recruiter/:recruiterId",
-  [withAuth, checkRole("recruiter")],
-  jobController.getPaginatedJobs,
-);
 
 export default router;

@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { StatusCodes, getReasonPhrase } from "http-status-codes";
 import jobService from "../services/jobs.service";
 import recruiterService from "../services/recruiter.service";
+import userService from "../services/user.service";
 import { JobStatus } from "../constants/enums";
 import ApiError from "../utils/ApiError";
 
@@ -92,12 +93,62 @@ class JobController {
   ): Promise<void> => {
     try {
       console.log("Fetching paginated jobs...");
-      const { recruiterId } = req.params;
       const page = parseInt(req.query.page as string, 10) || 1;
       const pageSize = parseInt(req.query.pageSize as string, 10) || 10;
       const search = req.query.search as string | undefined;
       const location = req.query.location as string | undefined;
       const jobType = req.query.jobType as string | undefined;
+
+      const { jobs, total, currentPage, totalPages } =
+        await jobService.getPaginatedJobs(
+          page,
+          pageSize,
+          search,
+          location,
+          jobType,
+        );
+
+      res.status(StatusCodes.OK).json({
+        data: {
+          jobs,
+          total,
+          currentPage,
+          totalPages,
+        },
+        message: "Paginated jobs retrieved successfully",
+        status: "success",
+      });
+    } catch (error: any) {
+      if (error instanceof ApiError) {
+        res.status(error.statusCode).json({ message: error.message });
+      } else {
+        console.error(error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+          message:
+            error.message || getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR),
+        });
+      }
+    }
+  };
+
+  public getPaginatedRecruiterJobs = async (
+    req: Request,
+    res: Response,
+  ): Promise<void> => {
+    try {
+      console.log("Fetching paginated jobs...");
+      const userId = req.userId;
+      const page = parseInt(req.query.page as string, 10) || 1;
+      const pageSize = parseInt(req.query.pageSize as string, 10) || 10;
+      const search = req.query.search as string | undefined;
+      const location = req.query.location as string | undefined;
+      const jobType = req.query.jobType as string | undefined;
+
+      const user = await userService.getUser(userId || "");
+      if (!user) {
+        throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
+      }
+      const recruiterId = user.recruiter?.id;
 
       const { jobs, total, currentPage, totalPages } =
         await jobService.getPaginatedJobs(
@@ -139,6 +190,7 @@ class JobController {
       const job = await jobService.getJobById(jobId);
 
       if (!job) {
+        console.log("Job not found jcb.controller 193");
         throw new ApiError(StatusCodes.NOT_FOUND, "Job not found");
       }
 

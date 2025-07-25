@@ -30,7 +30,10 @@ function RouteComponent() {
   const router = useRouter()
   const location = useLocation()
   const { firstName, role } = useUserStore()
-  const [selectedMenuItem, setSelectedMenuItem] = useState('profile')
+  const pathSegments = location.pathname.split('/')
+  const [selectedMenuItem, setSelectedMenuItem] = useState(
+    pathSegments[2] || 'profile',
+  )
 
   const selectPage = (page: string) => {
     setSelectedMenuItem(page)

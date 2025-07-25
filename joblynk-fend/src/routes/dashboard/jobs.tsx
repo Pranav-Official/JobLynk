@@ -31,14 +31,13 @@ export const Route = createFileRoute('/dashboard/jobs')({
 })
 
 function RouteComponent() {
-  const { recruiterId } = useUserStore()
   const queryClient = useQueryClient()
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [editingJob, setEditingJob] = useState<JobItem | null>(null)
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['recuiter/jobs'],
-    queryFn: () => getJobsForRecruiter(recruiterId, 1),
+    queryFn: () => getJobsForRecruiter(1),
   })
 
   const createJobMutation = useMutation({

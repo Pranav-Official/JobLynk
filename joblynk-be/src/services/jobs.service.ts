@@ -24,6 +24,7 @@ class JobService {
       const job = await db.Jobs.findByPk(jobId);
 
       if (!job) {
+        console.log("Job not found, jobs sdervice 27");
         throw new Error("Job not found");
       }
 
@@ -42,6 +43,7 @@ class JobService {
     const job = await db.Jobs.findByPk(jobId);
 
     if (!job) {
+      console.log("Job not found, jobs sdervice 46");
       throw new Error("Job not found");
     }
 
@@ -121,6 +123,7 @@ class JobService {
     const job = await db.Jobs.findByPk(jobId);
 
     if (!job) {
+      console.log("Job not found, jobs sdervice 126");
       throw new Error("Job not found");
     }
 
