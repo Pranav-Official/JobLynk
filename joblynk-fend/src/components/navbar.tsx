@@ -48,13 +48,13 @@ export default function NavBar() {
         </div>
       </nav>
       <div className="flex items-center space-x-4">
-        {navItems.map((item) => item.visble && (
+        {navItems.map((item) => item.visble && !routerState.location.pathname.startsWith('/onboarding') && (
           <div
             key={item.name}
             onClick={() => navigate({ to: item.path })}
             className={`cursor-pointer px-3 py-1 rounded-md transition duration-300 ${routerState.location.pathname.startsWith(item.path)
-                ? 'bg-blue-200 text-black'
-                : 'hover:bg-gray-200'
+              ? 'bg-blue-200 text-black'
+              : 'hover:bg-gray-200'
               }`}
           >
             {item.name}

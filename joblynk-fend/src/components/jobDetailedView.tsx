@@ -10,7 +10,7 @@ import {
   faMapMarkerAlt,
   faShare,
 } from '@fortawesome/free-solid-svg-icons'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import ConfirmationPopup from './confirmationPopup' // Import the new component
 import type { JobItem } from '@/constants/types/job'
@@ -28,6 +28,7 @@ interface JobDetailedViewProps {
 }
 
 const JobDetailedView: React.FC<JobDetailedViewProps> = ({ job }) => {
+  const queryClient = useQueryClient()
   const { isLoggedIn } = useStore()
   const { role } = useUserStore()
   const [showApplyConfirmation, setShowApplyConfirmation] = useState(false) // State for popup
@@ -39,6 +40,7 @@ const JobDetailedView: React.FC<JobDetailedViewProps> = ({ job }) => {
     onSuccess: (data) => {
       console.log('Application created successfully:', data)
       toast.success('Application created successfully!')
+      queryClient.invalidateQueries({ queryKey: ['seeker/applications'] })
     },
     onError: (error: AxiosError<ApiResponse<any>>) => {
       console.error('Failed to save company details:', error)
