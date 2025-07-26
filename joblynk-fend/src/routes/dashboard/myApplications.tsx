@@ -11,7 +11,6 @@ import { useMemo, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faBriefcase,
-  faEye,
   faSort,
   faSortDown,
   faSortUp,
@@ -37,16 +36,11 @@ function RouteComponent() {
   })
 
   const [globalFilter, setGlobalFilter] = useState('')
-  const [sorting, setSorting] = useState([])
+  const [sorting] = useState([])
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
   })
-
-  const handleView = (applicationId: string) => {
-    console.log(`View application with ID: ${applicationId}`)
-    alert(`Viewing application: ${applicationId}`)
-  }
 
   const columns = useMemo(
     () => [
@@ -94,45 +88,27 @@ function RouteComponent() {
         header: 'Status',
         cell: (info: any) => (
           <span
-            className={`px-2 py-1 rounded-full text-xs font-semibold ${
-              info.getValue() === ApplicationStatus.APPLIED
-                ? 'bg-blue-100 text-blue-800'
-                : info.getValue() === ApplicationStatus.REVIEWED
-                  ? 'bg-yellow-100 text-yellow-800'
-                  : info.getValue() === ApplicationStatus.INTERVIEWING
-                    ? 'bg-purple-100 text-purple-800'
-                    : info.getValue() === ApplicationStatus.REJECTED
-                      ? 'bg-red-100 text-red-800'
-                      : info.getValue() === ApplicationStatus.HIRED
-                        ? 'bg-green-100 text-green-800'
-                        : info.getValue() === ApplicationStatus.WITHDRAWN
-                          ? 'bg-gray-100 text-gray-800'
-                          : 'bg-gray-100 text-gray-800'
-            }`}
+            className={`px-2 py-1 rounded-full text-xs font-semibold ${info.getValue() === ApplicationStatus.APPLIED
+              ? 'bg-blue-100 text-blue-800'
+              : info.getValue() === ApplicationStatus.REVIEWED
+                ? 'bg-yellow-100 text-yellow-800'
+                : info.getValue() === ApplicationStatus.INTERVIEWING
+                  ? 'bg-purple-100 text-purple-800'
+                  : info.getValue() === ApplicationStatus.REJECTED
+                    ? 'bg-red-100 text-red-800'
+                    : info.getValue() === ApplicationStatus.HIRED
+                      ? 'bg-green-100 text-green-800'
+                      : info.getValue() === ApplicationStatus.WITHDRAWN
+                        ? 'bg-gray-100 text-gray-800'
+                        : 'bg-gray-100 text-gray-800'
+              }`}
           >
             {info.getValue()}
           </span>
         ),
         enableSorting: true,
         enableColumnFilter: true,
-      },
-      {
-        id: 'actions',
-        header: 'Actions',
-        cell: (info: any) => (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => handleView(info.row.original.id)}
-              className="p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"
-              title="View Application"
-            >
-              <FontAwesomeIcon icon={faEye} />
-            </button>
-          </div>
-        ),
-        enableSorting: false,
-        enableColumnFilter: false,
-      },
+      }
     ],
     [],
   )

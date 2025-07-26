@@ -20,20 +20,20 @@ import { JobType } from '@/constants/types/job'
 import { getDetailedJob } from '@/services/jobs'
 import { createApplication } from '@/services/application'
 import useUserStore from '@/stores/userStore'
+import useStore from '@/stores/authStore'
+import { AUTH_LOGIN_ENDPOINT, getFullApiUrl } from '@/constants/endpoints'
 
 interface JobDetailedViewProps {
   job: JobItem | null
 }
 
 const JobDetailedView: React.FC<JobDetailedViewProps> = ({ job }) => {
+  const { isLoggedIn } = useStore()
   const { role } = useUserStore()
   const [showApplyConfirmation, setShowApplyConfirmation] = useState(false) // State for popup
+  const loginUrl = getFullApiUrl(AUTH_LOGIN_ENDPOINT)
   const {
     mutate: applyJobMutation,
-    isPending: isApplyingJob,
-    isError: applyJobError,
-    isSuccess: applyJobSuccess,
-    error: applyJobErrorData,
   } = useMutation({
     mutationFn: (jobId: string) => createApplication(jobId),
     onSuccess: (data) => {
@@ -268,21 +268,30 @@ const JobDetailedView: React.FC<JobDetailedViewProps> = ({ job }) => {
           <p className="text-gray-600">Estimated annual salary</p>
         </div>
 
+        {!isLoggedIn && (<button
+          onClick={() => window.location.href = loginUrl}
+          className={`w-full py-3 px-6 rounded-lg font-medium transition-colors mb-8 flex items-center justify-center gap-2 bg-blue-600 text-white hover:bg-blue-700 cursor-pointer`}
+        >
+          Login to Apply
+        </button>)}
+
         {/* Apply Button */}
-        <button
-          onClick={handleApplyClick}
-          disabled={detailedJob.status !== 'active' || role === 'recruiter'}
-          className={`w-full py-3 px-6 rounded-lg font-medium transition-colors mb-8 flex items-center justify-center gap-2 ${
-            detailedJob.status === 'active' && role === 'seeker'
+        {isLoggedIn && (
+          <button
+            onClick={handleApplyClick}
+            disabled={detailedJob.status !== 'active' || role === 'recruiter'}
+            className={`w-full py-3 px-6 rounded-lg font-medium transition-colors mb-8 flex items-center justify-center gap-2 ${detailedJob.status === 'active' && role === 'seeker'
               ? 'bg-blue-600 text-white hover:bg-blue-700'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-          }`}
-        >
-          {detailedJob.easyApply ? 'Easy Apply' : 'Apply Now'}
-          {detailedJob.applyUrl && !detailedJob.easyApply && (
-            <FontAwesomeIcon icon={faExternalLinkAlt} className="w-4 h-4" />
-          )}
-        </button>
+              }`}
+          >
+            {detailedJob.easyApply ? 'Easy Apply' : 'Apply Now'}
+            {detailedJob.applyUrl && !detailedJob.easyApply && (
+              <FontAwesomeIcon icon={faExternalLinkAlt} className="w-4 h-4" />
+            )}
+          </button>
+        )}
+
 
         {/* Job Description */}
         <section className="mb-8">

@@ -23,7 +23,7 @@ import toast from 'react-hot-toast'
 import type { JobItem } from '@/constants/types/job'
 import { CreateJobForm } from '@/components/createJobForm'
 import { Modal } from '@/components/modal'
-import { JobStatus, JobType } from '@/constants/enums'
+import { JobStatus } from '@/constants/enums'
 import {
   createJob,
   deleteJob,
@@ -44,7 +44,7 @@ function RouteComponent() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [editingJob, setEditingJob] = useState<JobItem | null>(null)
 
-  const { data, isLoading, isError } = useQuery({
+  const { data } = useQuery({
     queryKey: ['recuiter/jobs'],
     queryFn: () => getJobsForRecruiter(1),
   })
@@ -199,15 +199,14 @@ function RouteComponent() {
         header: 'Status',
         cell: (info: any) => (
           <span
-            className={`px-2 py-1 rounded-full text-xs font-semibold ${
-              info.getValue() === JobStatus.ACTIVE
-                ? 'bg-green-100 text-green-800'
-                : info.getValue() === JobStatus.DRAFT
-                  ? 'bg-yellow-100 text-yellow-800'
-                  : info.getValue() === JobStatus.EXPIRED
-                    ? 'bg-red-100 text-red-800'
-                    : 'bg-gray-100 text-gray-800'
-            }`}
+            className={`px-2 py-1 rounded-full text-xs font-semibold ${info.getValue() === JobStatus.ACTIVE
+              ? 'bg-green-100 text-green-800'
+              : info.getValue() === JobStatus.DRAFT
+                ? 'bg-yellow-100 text-yellow-800'
+                : info.getValue() === JobStatus.EXPIRED
+                  ? 'bg-red-100 text-red-800'
+                  : 'bg-gray-100 text-gray-800'
+              }`}
           >
             {info.getValue().charAt(0).toUpperCase() + info.getValue().slice(1)}
           </span>
@@ -249,7 +248,7 @@ function RouteComponent() {
   })
 
   const [globalFilter, setGlobalFilter] = useState('')
-  const [sorting, setSorting] = useState([])
+  const [sorting] = useState([])
 
   const table = useReactTable({
     data: data?.jobs || [],

@@ -31,8 +31,8 @@ export default function NavBar() {
   }
 
   const navItems = [
-    { name: 'Jobs', path: '/jobs' },
-    { name: 'Dashboard', path: '/dashboard' },
+    { name: 'Jobs', path: '/jobs', visble: true },
+    { name: 'Dashboard', path: '/dashboard', visble: isLoggedIn },
   ]
 
   return (
@@ -48,15 +48,14 @@ export default function NavBar() {
         </div>
       </nav>
       <div className="flex items-center space-x-4">
-        {navItems.map((item) => (
+        {navItems.map((item) => item.visble && (
           <div
             key={item.name}
             onClick={() => navigate({ to: item.path })}
-            className={`cursor-pointer px-3 py-1 rounded-md transition duration-300 ${
-              routerState.location.pathname.startsWith(item.path)
+            className={`cursor-pointer px-3 py-1 rounded-md transition duration-300 ${routerState.location.pathname.startsWith(item.path)
                 ? 'bg-blue-200 text-black'
                 : 'hover:bg-gray-200'
-            }`}
+              }`}
           >
             {item.name}
           </div>

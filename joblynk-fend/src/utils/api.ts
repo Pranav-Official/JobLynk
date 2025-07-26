@@ -21,10 +21,28 @@ api.interceptors.response.use(
   (response: AxiosResponse<ApiResponse<any>>) => {
     return response
   },
-  (error: AxiosError<ApiResponse<any>>) => {
+  (error: AxiosError<ApiResponse<any> | any>) => {
     if (error.response) {
       console.error('Axios response error - status:', error.response.status)
       console.error('Axios response error - data:', error.response.data)
+
+      if (error.response.status === 401) {
+        console.log('Received 401 Unauthorized. Checking for redirect URL.')
+        const redirectTo = error.response.data && error.response.data.redirectTo
+        if (redirectTo) {
+          console.log(`Redirecting to: ${redirectTo}`)
+          localStorage.clear()
+          sessionStorage.clear()
+          window.location.href = redirectTo
+        } else {
+          console.log('No specific redirectTo URL in response. Redirecting to default login page.')
+          localStorage.clear()
+          sessionStorage.clear()
+          window.location.href = 'http://localhost:3000/'
+        }
+        return Promise.reject(error)
+      }
+
       return Promise.reject(error)
     } else if (error.request) {
       console.error('Axios no response error:', error.request)
