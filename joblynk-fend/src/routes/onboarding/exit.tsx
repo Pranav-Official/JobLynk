@@ -19,8 +19,11 @@ function RouteComponent() {
   const { currentRole } = useOnboardingStore()
 
   const handleLetsGo = () => {
-    // Navigate to dashboard or appropriate page
-    navigate({ to: '/jobs' })
+    if (currentRole === 'seeker') {
+      navigate({ to: '/jobs' })
+    } else if (currentRole === 'recruiter') {
+      navigate({ to: '/dashboard' })
+    }
   }
 
   const getContent = () => {

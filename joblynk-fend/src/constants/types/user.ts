@@ -20,6 +20,13 @@ export interface User {
   role: UserRole
 }
 
+export interface EditUser {
+  firstName: string
+  lastName: string
+  email: string
+  phone: string | null
+}
+
 export interface UserProfile {
   user: User
   recruiter?: RecruiterAttributes

@@ -280,11 +280,10 @@ function RouteComponent() {
                 <button
                   onClick={handlePrevPage}
                   disabled={currentPage === 1}
-                  className={`p-2 rounded-md ${
-                    currentPage === 1
+                  className={`p-2 rounded-md ${currentPage === 1
                       ? 'text-gray-300 cursor-not-allowed'
                       : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                  }`}
+                    }`}
                 >
                   <FontAwesomeIcon icon={faChevronLeft} className="w-4 h-4" />
                 </button>
@@ -298,13 +297,12 @@ function RouteComponent() {
                         typeof page === 'number' && handlePageChange(page)
                       }
                       disabled={page === '...'}
-                      className={`px-3 py-1 rounded-md text-sm ${
-                        page === currentPage
+                      className={`px-3 py-1 rounded-md text-sm ${page === currentPage
                           ? 'bg-blue-600 text-white'
                           : page === '...'
                             ? 'text-gray-400 cursor-default'
                             : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                      }`}
+                        }`}
                     >
                       {page}
                     </button>
@@ -315,11 +313,10 @@ function RouteComponent() {
                 <button
                   onClick={handleNextPage}
                   disabled={currentPage === data.totalPages}
-                  className={`p-2 rounded-md ${
-                    currentPage === data.totalPages
+                  className={`p-2 rounded-md ${currentPage === data.totalPages
                       ? 'text-gray-300 cursor-not-allowed'
                       : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                  }`}
+                    }`}
                 >
                   <FontAwesomeIcon icon={faChevronRight} className="w-4 h-4" />
                 </button>

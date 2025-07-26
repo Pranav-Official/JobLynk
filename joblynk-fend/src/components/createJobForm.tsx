@@ -1,6 +1,10 @@
 import { useForm } from 'react-hook-form'
-import type { JobStatusType, JobTypeType } from '@/constants/enums' // Adjust this import path as needed
+import { useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import type { JobStatusType, JobTypeType } from '@/constants/enums'
+import type { JobItem } from '@/constants/types/job'
 import { JobStatus, JobType } from '@/constants/enums'
+import { getDetailedJob } from '@/services/jobs'
 
 type CreateJobFormData = {
   title: string
@@ -9,37 +13,82 @@ type CreateJobFormData = {
   jobType: JobTypeType
   salaryMin: number | null
   salaryMax: number | null
-  salaryCurrency: string
+  salaryCurrency: string | null // Changed to allow null
   applyUrl: string
   status: JobStatusType
-  expiresAt: string // Using string for date input
+  expiresAt: string
   easyApply: boolean
+  skills: string
 }
 
 type CreateJobFormProps = {
   onClose: () => void
-  onSubmit: (data: CreateJobFormData) => void
+  onSubmit: (
+    data: Omit<CreateJobFormData, 'skills'> & { skills: Array<string> },
+  ) => void
   isLoading?: boolean
+  initialData?: JobItem | null
+  isEditMode?: boolean
 }
 
 export function CreateJobForm({
   onClose,
   onSubmit,
   isLoading,
+  initialData,
+  isEditMode = false,
 }: CreateJobFormProps) {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
-  } = useForm<CreateJobFormData>()
+  } = useForm<CreateJobFormData>({
+    defaultValues: initialData
+      ? {
+          ...initialData,
+          expiresAt: initialData.expiresAt
+            ? new Date(initialData.expiresAt).toISOString().split('T')[0]
+            : '',
+          skills: initialData.skills ? initialData.skills.join(', ') : '',
+          salaryCurrency: initialData.salaryCurrency || '', // Handle null for display
+        }
+      : undefined,
+  })
+
+  const {
+    data: detailedJob,
+    isLoading: isDetailLoading,
+    isError: isDetailError,
+  } = useQuery({
+    queryKey: ['job', initialData],
+    queryFn: () => getDetailedJob(initialData?.id || ''),
+    enabled: !!initialData?.id, // Only run query when job ID exists
+  })
+
+  const transformAndSubmit = (data: CreateJobFormData) => {
+    const transformedData = {
+      ...data,
+      skills: data.skills
+        ? data.skills.split(',').map((skill) => skill.trim())
+        : [],
+    }
+    onSubmit(transformedData)
+  }
+
+  useEffect(() => {
+    if (!isDetailLoading && !isDetailError && detailedJob) {
+      setValue('descriptionMarkdown', detailedJob.descriptionMarkdown)
+    }
+  }, [isDetailLoading, isDetailError, detailedJob])
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(transformAndSubmit)}
       className="space-y-6 p-6 bg-white rounded-lg shadow-xl max-h-[90vh] overflow-y-auto w-full max-w-2xl"
     >
       <h2 className="text-2xl font-bold text-gray-900 text-center">
-        Create New Job Post
+        {isEditMode ? 'Edit Job Post' : 'Create New Job Post'}
       </h2>
 
       <div>
@@ -97,6 +146,25 @@ export function CreateJobForm({
         />
         {errors.location && (
           <p className="mt-1 text-sm text-red-600">{errors.location.message}</p>
+        )}
+      </div>
+
+      <div>
+        <label
+          htmlFor="skills"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Skills (comma-separated)
+        </label>
+        <input
+          id="skills"
+          type="text"
+          {...register('skills')}
+          placeholder="e.g., React, Node.js, TypeScript"
+          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+        />
+        {errors.skills && (
+          <p className="mt-1 text-sm text-red-600">{errors.skills.message}</p>
         )}
       </div>
 
@@ -165,7 +233,7 @@ export function CreateJobForm({
             type="text"
             {...register('salaryCurrency')}
             placeholder="e.g., USD, EUR"
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
       </div>
@@ -188,7 +256,7 @@ export function CreateJobForm({
             },
           })}
           placeholder="https://example.com/apply"
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         />
         {errors.applyUrl && (
           <p className="mt-1 text-sm text-red-600">{errors.applyUrl.message}</p>
@@ -230,7 +298,7 @@ export function CreateJobForm({
           id="expiresAt"
           type="date"
           {...register('expiresAt')}
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         />
       </div>
 
@@ -260,7 +328,13 @@ export function CreateJobForm({
           className="px-6 py-2 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={isLoading}
         >
-          {isLoading ? 'Creating...' : 'Create Job'}
+          {isLoading
+            ? isEditMode
+              ? 'Saving...'
+              : 'Creating...'
+            : isEditMode
+              ? 'Save Changes'
+              : 'Create Job'}
         </button>
       </div>
     </form>

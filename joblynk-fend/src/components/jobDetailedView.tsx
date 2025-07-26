@@ -1,5 +1,5 @@
 // components/JobDetailedView.tsx
-import React from 'react'
+import React, { useState } from 'react' // Import useState
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faBookmark,
@@ -9,25 +9,43 @@ import {
   faExternalLinkAlt,
   faMapMarkerAlt,
   faShare,
-  faUsers,
 } from '@fortawesome/free-solid-svg-icons'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import toast from 'react-hot-toast'
+import ConfirmationPopup from './confirmationPopup' // Import the new component
 import type { JobItem } from '@/constants/types/job'
+import type { ApiResponse } from '@/constants/types/api'
+import type { AxiosError } from 'axios'
 import { JobType } from '@/constants/types/job'
-import api from '@/utils/api'
-import { JOBS_LIST_ENDPOINT } from '@/constants/endpoints'
+import { getDetailedJob } from '@/services/jobs'
+import { createApplication } from '@/services/application'
+import useUserStore from '@/stores/userStore'
+import useStore from '@/stores/authStore'
+import { AUTH_LOGIN_ENDPOINT, getFullApiUrl } from '@/constants/endpoints'
 
 interface JobDetailedViewProps {
   job: JobItem | null
 }
 
-const getDetailedJob = async (jobId: string) => {
-  const response = await api.get(`${JOBS_LIST_ENDPOINT}/${jobId}`)
-  console.log(response.data)
-  return response.data.data
-}
-
 const JobDetailedView: React.FC<JobDetailedViewProps> = ({ job }) => {
+  const { isLoggedIn } = useStore()
+  const { role } = useUserStore()
+  const [showApplyConfirmation, setShowApplyConfirmation] = useState(false) // State for popup
+  const loginUrl = getFullApiUrl(AUTH_LOGIN_ENDPOINT)
+  const {
+    mutate: applyJobMutation,
+  } = useMutation({
+    mutationFn: (jobId: string) => createApplication(jobId),
+    onSuccess: (data) => {
+      console.log('Application created successfully:', data)
+      toast.success('Application created successfully!')
+    },
+    onError: (error: AxiosError<ApiResponse<any>>) => {
+      console.error('Failed to save company details:', error)
+      toast.error(error.response?.data.message ?? 'An error occurred')
+    },
+  })
+
   const {
     data: detailedJob,
     isLoading,
@@ -140,12 +158,14 @@ const JobDetailedView: React.FC<JobDetailedViewProps> = ({ job }) => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'ACTIVE':
+      case 'active':
         return 'bg-green-100 text-green-800'
-      case 'CLOSED':
+      case 'expired':
         return 'bg-red-100 text-red-800'
-      case 'DRAFT':
+      case 'draft':
         return 'bg-yellow-100 text-yellow-800'
+      case 'filled':
+        return 'bg-blue-100 text-blue-800'
       default:
         return 'bg-gray-100 text-gray-800'
     }
@@ -156,9 +176,24 @@ const JobDetailedView: React.FC<JobDetailedViewProps> = ({ job }) => {
   }
 
   const handleApplyClick = () => {
-    if (detailedJob.applyUrl) {
+    if (!detailedJob.applyUrl || detailedJob.status !== 'active') {
+      return // Prevent action if not applicable
+    }
+
+    if (detailedJob.easyApply) {
+      setShowApplyConfirmation(true) // Show confirmation for Easy Apply
+    } else {
       window.open(detailedJob.applyUrl, '_blank', 'noopener,noreferrer')
     }
+  }
+
+  const handleConfirmEasyApply = () => {
+    applyJobMutation(detailedJob.id)
+    setShowApplyConfirmation(false) // Close popup
+  }
+
+  const handleCancelEasyApply = () => {
+    setShowApplyConfirmation(false) // Close popup
   }
 
   return (
@@ -173,7 +208,7 @@ const JobDetailedView: React.FC<JobDetailedViewProps> = ({ job }) => {
             <div className="flex items-center gap-2 mb-2">
               <FontAwesomeIcon icon={faBuilding} className="text-gray-500" />
               <span className="text-lg font-medium text-gray-700">
-                {detailedJob.companyName || 'Company Name'}
+                {detailedJob.recruiter.companyName || 'Company Name'}
               </span>
             </div>
             <div className="flex items-center gap-4 text-sm text-gray-500">
@@ -184,10 +219,6 @@ const JobDetailedView: React.FC<JobDetailedViewProps> = ({ job }) => {
               <div className="flex items-center gap-1">
                 <FontAwesomeIcon icon={faClock} />
                 <span>{formatPostedDate()}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <FontAwesomeIcon icon={faUsers} />
-                <span>Recruiter ID: {detailedJob.recruiterId}</span>
               </div>
             </div>
           </div>
@@ -237,21 +268,30 @@ const JobDetailedView: React.FC<JobDetailedViewProps> = ({ job }) => {
           <p className="text-gray-600">Estimated annual salary</p>
         </div>
 
+        {!isLoggedIn && (<button
+          onClick={() => window.location.href = loginUrl}
+          className={`w-full py-3 px-6 rounded-lg font-medium transition-colors mb-8 flex items-center justify-center gap-2 bg-blue-600 text-white hover:bg-blue-700 cursor-pointer`}
+        >
+          Login to Apply
+        </button>)}
+
         {/* Apply Button */}
-        <button
-          onClick={handleApplyClick}
-          disabled={!detailedJob.applyUrl || detailedJob.status !== 'active'}
-          className={`w-full py-3 px-6 rounded-lg font-medium transition-colors mb-8 flex items-center justify-center gap-2 ${
-            detailedJob.applyUrl && detailedJob.status === 'active'
+        {isLoggedIn && (
+          <button
+            onClick={handleApplyClick}
+            disabled={detailedJob.status !== 'active' || role === 'recruiter'}
+            className={`w-full py-3 px-6 rounded-lg font-medium transition-colors mb-8 flex items-center justify-center gap-2 ${detailedJob.status === 'active' && role === 'seeker'
               ? 'bg-blue-600 text-white hover:bg-blue-700'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-          }`}
-        >
-          {detailedJob.easyApply ? 'Easy Apply' : 'Apply Now'}
-          {detailedJob.applyUrl && !detailedJob.easyApply && (
-            <FontAwesomeIcon icon={faExternalLinkAlt} className="w-4 h-4" />
-          )}
-        </button>
+              }`}
+          >
+            {detailedJob.easyApply ? 'Easy Apply' : 'Apply Now'}
+            {detailedJob.applyUrl && !detailedJob.easyApply && (
+              <FontAwesomeIcon icon={faExternalLinkAlt} className="w-4 h-4" />
+            )}
+          </button>
+        )}
+
 
         {/* Job Description */}
         <section className="mb-8">
@@ -313,6 +353,17 @@ const JobDetailedView: React.FC<JobDetailedViewProps> = ({ job }) => {
           </div>
         </section>
       </div>
+
+      {/* Confirmation Popup */}
+      {showApplyConfirmation && detailedJob.easyApply && (
+        <ConfirmationPopup
+          title="Confirm Easy Apply"
+          message={`Are you sure you want to apply for "${detailedJob.title}" with your saved profile?`}
+          onCancel={handleCancelEasyApply}
+          onConfirm={handleConfirmEasyApply}
+          confirmButtonText="Yes, Apply"
+        />
+      )}
     </div>
   )
 }

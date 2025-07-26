@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from 'react'
+import { createContext, useEffect } from 'react'
 import {
   Outlet,
   createFileRoute,
@@ -6,8 +6,9 @@ import {
   useLocation,
   useNavigate,
 } from '@tanstack/react-router'
-import type { OnboardingStep, UserRole } from '@/constants/types/user'
+import type { OnboardingStep } from '@/constants/types/user'
 import { useOnboardingStore } from '@/stores/onboardingStore'
+import { useAuthStatus } from '@/hooks/useAuthStatus'
 
 export const Route = createFileRoute('/onboarding')({
   beforeLoad: ({ context }) => {
@@ -30,6 +31,7 @@ export const OnboardingNavigationContext =
   createContext<OnboardingNavigationContextType>(null)
 
 function RouteComponent() {
+  useAuthStatus()
   const navigate = useNavigate()
   const location = useLocation()
   const { currentStep, currentStepIndex, totalSteps, setCurrentStepIndex } =

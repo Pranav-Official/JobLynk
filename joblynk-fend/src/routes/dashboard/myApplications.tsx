@@ -11,174 +11,63 @@ import { useMemo, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faBriefcase,
-  faEdit,
-  faPlus,
   faSort,
   faSortDown,
   faSortUp,
-  faTrash,
 } from '@fortawesome/free-solid-svg-icons'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import toast from 'react-hot-toast'
-import type { JobItem } from '@/constants/types/job'
-import { CreateJobForm } from '@/components/createJobForm'
-import { Modal } from '@/components/modal'
-import { JobStatus } from '@/constants/enums'
-import {
-  createJob,
-  deleteJob,
-  editJob,
-  getJobsForRecruiter,
-} from '@/services/jobs'
-import ConfirmationPopup from '@/components/confirmationPopup'
+import { useQuery } from '@tanstack/react-query'
+import { getSeekerApplications } from '@/services/application'
+import { ApplicationStatus } from '@/constants/types/application' // Assuming you have this enum
 
-export const Route = createFileRoute('/dashboard/jobs')({
+// Import your defined types
+
+export const Route = createFileRoute('/dashboard/myApplications')({
   component: RouteComponent,
 })
 
 function RouteComponent() {
-  const queryClient = useQueryClient()
-  const [isDeleteConfirmModalOpen, setIsDeleteConfirmModalOpen] =
-    useState(false)
-  const [jobIdForDelete, setJobIdForDelete] = useState<string | null>(null)
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [editingJob, setEditingJob] = useState<JobItem | null>(null)
-
-  const { data } = useQuery({
-    queryKey: ['recuiter/jobs'],
-    queryFn: () => getJobsForRecruiter(1),
+  const {
+    data: applicationResponse,
+    isError,
+    isLoading,
+  } = useQuery({
+    queryKey: ['seeker/applications'],
+    queryFn: () => getSeekerApplications(),
   })
 
-  const createJobMutation = useMutation({
-    mutationFn: createJob,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recuiter/jobs'] })
-      setIsCreateModalOpen(false)
-      toast.success('Job created successfully')
-    },
-    onError: (error) => {
-      console.error('Error creating job:', error)
-      toast.error('Failed to create job')
-    },
+  const [globalFilter, setGlobalFilter] = useState('')
+  const [sorting] = useState([])
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 10,
   })
-
-  const deleteJobMutation = useMutation({
-    mutationFn: deleteJob,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recuiter/jobs'] })
-      toast.success('Job deleted successfully')
-    },
-    onError: (error) => {
-      console.error('Error deleting job:', error)
-      toast.error('Failed to delete job')
-    },
-  })
-
-  const editJobMutation = useMutation({
-    mutationFn: ({ jobId, jobData }: { jobId: string; jobData: JobItem }) =>
-      editJob(jobId, jobData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recuiter/jobs'] })
-      setIsCreateModalOpen(false)
-      setEditingJob(null)
-      toast.success('Job edited successfully')
-    },
-    onError: (error) => {
-      console.error('Error editing job:', error)
-      toast.error('Failed to edit job')
-    },
-  })
-
-  const showDeleteConfirmation = (jobId: string) => {
-    setJobIdForDelete(jobId)
-    setIsDeleteConfirmModalOpen(true)
-  }
-
-  const handleDelete = () => {
-    console.log(`Deleting job with ID: ${jobIdForDelete}`)
-    if (!jobIdForDelete) return
-    deleteJobMutation.mutate(jobIdForDelete)
-    setIsDeleteConfirmModalOpen(false)
-  }
-
-  const handleEdit = (job: JobItem) => {
-    setEditingJob(job)
-    setIsCreateModalOpen(true)
-  }
-
-  const handleCreateJobPost = () => {
-    setEditingJob(null)
-    setIsCreateModalOpen(true)
-  }
-
-  const handleCloseCreateModal = () => {
-    setIsCreateModalOpen(false)
-    setEditingJob(null)
-  }
-
-  const handleFormSubmit = (formData: any) => {
-    const jobData: JobItem = {
-      ...formData,
-      salaryMin: formData.salaryMin === '' ? null : formData.salaryMin,
-      salaryMax: formData.salaryMax === '' ? null : formData.salaryMax,
-      salaryCurrency:
-        formData.salaryCurrency === '' ? null : formData.salaryCurrency,
-      expiresAt: formData.expiresAt ? new Date(formData.expiresAt) : null,
-      postedAt: new Date(),
-    }
-
-    if (editingJob && editingJob.id) {
-      editJobMutation.mutate({ jobId: editingJob.id, jobData })
-    } else {
-      createJobMutation.mutate(jobData)
-    }
-  }
 
   const columns = useMemo(
     () => [
       {
-        accessorKey: 'title',
+        accessorKey: 'job.title', // Access nested property
         header: 'Job Title',
         cell: (info: any) => info.getValue(),
         enableSorting: true,
         enableColumnFilter: true,
       },
       {
-        accessorKey: 'location',
+        accessorKey: 'job.recruiter.companyName', // Access nested property for company name
+        header: 'Company',
+        cell: (info: any) => info.getValue(),
+        enableSorting: true,
+        enableColumnFilter: true,
+      },
+      {
+        accessorKey: 'job.location', // Access nested property for location
         header: 'Location',
         cell: (info: any) => info.getValue(),
         enableSorting: true,
         enableColumnFilter: true,
       },
       {
-        accessorKey: 'jobType',
-        header: 'Job Type',
-        cell: (info: any) =>
-          info.getValue().charAt(0).toUpperCase() +
-          info.getValue().slice(1).replace('-', ' '),
-        enableSorting: true,
-        enableColumnFilter: true,
-      },
-      {
-        accessorFn: (row: JobItem) => {
-          if (row.salaryMin && row.salaryMax) {
-            return `${row.salaryMin} - ${row.salaryMax} ${row.salaryCurrency}`
-          } else if (row.salaryMin) {
-            return `From ${row.salaryMin} ${row.salaryCurrency}`
-          } else if (row.salaryMax) {
-            return `Up to ${row.salaryMax} ${row.salaryCurrency}`
-          }
-          return 'N/A'
-        },
-        id: 'salary',
-        header: 'Salary',
-        cell: (info: any) => info.getValue(),
-        enableSorting: true,
-        enableColumnFilter: true,
-      },
-      {
-        accessorKey: 'postedAt',
-        header: 'Posted Date',
+        accessorKey: 'applicationDate',
+        header: 'Application Date',
         cell: (info: any) => {
           const dateValue = info.getValue()
           if (dateValue) {
@@ -199,59 +88,33 @@ function RouteComponent() {
         header: 'Status',
         cell: (info: any) => (
           <span
-            className={`px-2 py-1 rounded-full text-xs font-semibold ${info.getValue() === JobStatus.ACTIVE
-              ? 'bg-green-100 text-green-800'
-              : info.getValue() === JobStatus.DRAFT
+            className={`px-2 py-1 rounded-full text-xs font-semibold ${info.getValue() === ApplicationStatus.APPLIED
+              ? 'bg-blue-100 text-blue-800'
+              : info.getValue() === ApplicationStatus.REVIEWED
                 ? 'bg-yellow-100 text-yellow-800'
-                : info.getValue() === JobStatus.EXPIRED
-                  ? 'bg-red-100 text-red-800'
-                  : 'bg-gray-100 text-gray-800'
+                : info.getValue() === ApplicationStatus.INTERVIEWING
+                  ? 'bg-purple-100 text-purple-800'
+                  : info.getValue() === ApplicationStatus.REJECTED
+                    ? 'bg-red-100 text-red-800'
+                    : info.getValue() === ApplicationStatus.HIRED
+                      ? 'bg-green-100 text-green-800'
+                      : info.getValue() === ApplicationStatus.WITHDRAWN
+                        ? 'bg-gray-100 text-gray-800'
+                        : 'bg-gray-100 text-gray-800'
               }`}
           >
-            {info.getValue().charAt(0).toUpperCase() + info.getValue().slice(1)}
+            {info.getValue()}
           </span>
         ),
         enableSorting: true,
         enableColumnFilter: true,
-      },
-      {
-        id: 'actions',
-        header: 'Actions',
-        cell: (info: any) => (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => showDeleteConfirmation(info.row.original.id)}
-              className="p-2 rounded-full bg-red-200 text-red-600 hover:bg-red-200 transition-colors"
-              title="View Job"
-            >
-              <FontAwesomeIcon icon={faTrash} />
-            </button>
-            <button
-              onClick={() => handleEdit(info.row.original as JobItem)}
-              className="p-2 rounded-full bg-green-100 text-green-600 hover:bg-green-200 transition-colors"
-              title="Edit Job"
-            >
-              <FontAwesomeIcon icon={faEdit} />
-            </button>
-          </div>
-        ),
-        enableSorting: false,
-        enableColumnFilter: false,
-      },
+      }
     ],
     [],
   )
 
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 10,
-  })
-
-  const [globalFilter, setGlobalFilter] = useState('')
-  const [sorting] = useState([])
-
   const table = useReactTable({
-    data: data?.jobs || [],
+    data: applicationResponse?.data.applications || [],
     columns,
     state: {
       pagination,
@@ -266,20 +129,29 @@ function RouteComponent() {
     getSortedRowModel: getSortedRowModel(),
   })
 
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        Loading applications...
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="flex justify-center items-center h-full text-red-500">
+        Error loading applications.
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col h-full w-full p-8 bg-white shadow-lg rounded-lg">
       <div className="flex justify-between items-center mb-6 border-b pb-4">
         <h2 className="text-3xl font-bold text-gray-900 flex items-center">
           <FontAwesomeIcon icon={faBriefcase} className="mr-3 text-blue-600" />
-          Job Listings
+          My Job Applications
         </h2>
-        <button
-          onClick={handleCreateJobPost}
-          className="px-6 py-3 bg-blue-600 text-white rounded-md shadow-md hover:bg-blue-700 transition-colors duration-200 flex items-center text-lg font-medium"
-        >
-          <FontAwesomeIcon icon={faPlus} className="mr-2" />
-          Create Job Post
-        </button>
       </div>
 
       <div className="mb-4 flex justify-between items-center">
@@ -291,7 +163,8 @@ function RouteComponent() {
           className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <div className="text-sm text-gray-600">
-          Showing {table.getRowModel().rows.length} of {data?.total} jobs
+          Showing {table.getRowModel().rows.length} of{' '}
+          {applicationResponse?.data.total || 0} applications
         </div>
       </div>
 
@@ -355,7 +228,7 @@ function RouteComponent() {
                   colSpan={columns.length}
                   className="px-6 py-4 text-center text-gray-500"
                 >
-                  No jobs found.
+                  No applications found.
                 </td>
               </tr>
             )}
@@ -398,7 +271,8 @@ function RouteComponent() {
         <span className="flex items-center gap-1 text-sm text-gray-700">
           Page{' '}
           <strong>
-            {data?.currentPage} of {data?.totalPages}
+            {table.getState().pagination.pageIndex + 1} of{' '}
+            {table.getPageCount()}
           </strong>
         </span>
 
@@ -416,24 +290,6 @@ function RouteComponent() {
           ))}
         </select>
       </div>
-
-      <Modal isOpen={isCreateModalOpen} onClose={handleCloseCreateModal}>
-        <CreateJobForm
-          onClose={handleCloseCreateModal}
-          onSubmit={handleFormSubmit}
-          isLoading={createJobMutation.isPending || editJobMutation.isPending}
-          initialData={editingJob}
-          isEditMode={!!editingJob}
-        />
-      </Modal>
-      {isDeleteConfirmModalOpen && (
-        <ConfirmationPopup
-          title="Delete Job?"
-          message="Are you sure you want to delete this job?"
-          onConfirm={handleDelete}
-          onCancel={() => setIsDeleteConfirmModalOpen(false)}
-        />
-      )}
     </div>
   )
 }

@@ -1,9 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faBriefcase,
   faBuilding,
+  faEdit,
   faEnvelope,
   faExclamationCircle,
   faFileAlt,
@@ -12,13 +13,27 @@ import {
   faSpinner,
   faUser,
 } from '@fortawesome/free-solid-svg-icons'
-import { getUserProfile } from '@/services/user' // Assuming this path is correct
+import { useState } from 'react'
+import toast from 'react-hot-toast'
+import { UserProfileEditModal } from '@/components/userProfileEditModal'
+import { SeekerProfileEditModal } from '@/components/seekerProfileEditModel'
+import { RecruiterProfileEditModal } from '@/components/recruiterProfileEditModal' // New import
+import { getUserProfile, updateUserProfile } from '@/services/user'
+import { updateSeekerEmployment, updateSeekerResume } from '@/services/seeker'
+import { updateRecruiterCompany } from '@/services/recruiter' // New import
+import { getSecretURL, portPresignedURL, uploadFileToS3 } from '@/services/file'
 
 export const Route = createFileRoute('/dashboard/profile')({
   component: RouteComponent,
 })
 
 function RouteComponent() {
+  const queryClient = useQueryClient()
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isSeekerEditModalOpen, setIsSeekerEditModalOpen] = useState(false)
+  const [isRecruiterEditModalOpen, setIsRecruiterEditModalOpen] =
+    useState(false) // New state
+
   const {
     data,
     isLoading: isDataLoading,
@@ -28,6 +43,129 @@ function RouteComponent() {
     queryKey: ['userDetails'],
     queryFn: () => getUserProfile(),
   })
+
+  const resumeUrlMutation = useMutation({
+    mutationFn: (fileKey: string) => getSecretURL(fileKey),
+    onSuccess: (url: string) => {
+      window.open(url, '_blank')
+    },
+  })
+
+  const {
+    mutate: updateProfile,
+    isPending: isUpdating,
+    isError: isUpdateError,
+    error: updateError,
+    reset: resetUpdateStatus,
+  } = useMutation({
+    mutationFn: updateUserProfile,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['userDetails'] })
+      setIsEditModalOpen(false)
+      resetUpdateStatus()
+      toast.success('Profile updated successfully')
+    },
+    onError: () => {
+      toast.error('Failed to update profile')
+    },
+  })
+
+  const {
+    mutate: updateSeekerDetails,
+    isPending: isUpdatingSeeker,
+    isError: isUpdateSeekerError,
+    error: updateSeekerError,
+    reset: resetUpdateSeekerStatus,
+  } = useMutation({
+    mutationFn: async ({
+      employmentStatus,
+      resumeFile,
+    }: {
+      employmentStatus: string
+      resumeFile: File | null
+    }) => {
+      await updateSeekerEmployment(employmentStatus)
+
+      if (resumeFile) {
+        const presignedRes = await portPresignedURL(resumeFile)
+        const { url, fields, key } = presignedRes.data
+
+        const formData = new FormData()
+        Object.entries(fields).forEach(([k, v]) =>
+          formData.append(k, v as string),
+        )
+        formData.append('Content-Type', resumeFile.type)
+        formData.append('file', resumeFile)
+
+        await uploadFileToS3(url, formData)
+        await updateSeekerResume(key)
+        return key
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['userDetails'] })
+      setIsSeekerEditModalOpen(false)
+      resetUpdateSeekerStatus()
+      toast.success('Seeker profile updated successfully')
+    },
+    onError: () => {
+      toast.error('Failed to update seeker profile')
+    },
+  })
+
+  const {
+    mutate: updateRecruiterDetails,
+    isPending: isUpdatingRecruiter,
+    isError: isUpdateRecruiterError,
+    error: updateRecruiterError,
+    reset: resetUpdateRecruiterStatus,
+  } = useMutation({
+    mutationFn: ({
+      companyName,
+      companyWebsite,
+    }: {
+      companyName: string
+      companyWebsite: string
+    }) => updateRecruiterCompany(companyName, companyWebsite),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['userDetails'] })
+      setIsRecruiterEditModalOpen(false)
+      resetUpdateRecruiterStatus()
+      toast.success('Recruiter profile updated successfully')
+    },
+    onError: () => {
+      toast.error('Failed to update recruiter profile')
+    },
+  })
+
+  const handleSaveProfile = async (updatedData: {
+    firstName: string
+    lastName: string
+    email: string
+    phone: string | null
+  }) => {
+    updateProfile(updatedData)
+  }
+
+  const handleSaveSeekerProfile = async (updatedData: {
+    employmentStatus: string
+    resumeFile: File | null
+  }) => {
+    updateSeekerDetails(updatedData)
+  }
+
+  const handleSaveRecruiterProfile = async (updatedData: {
+    companyName: string
+    companyWebsite: string
+  }) => {
+    updateRecruiterDetails(updatedData)
+  }
+
+  const handleViewResumeClick = (urlKey: string) => {
+    if (urlKey) {
+      resumeUrlMutation.mutate(urlKey)
+    }
+  }
 
   if (isDataLoading) {
     return (
@@ -59,7 +197,7 @@ function RouteComponent() {
     )
   }
 
-  const userProfile = data?.data // Accessing the data field from ApiResponse
+  const userProfile = data?.data
 
   if (!userProfile) {
     return (
@@ -74,7 +212,6 @@ function RouteComponent() {
   return (
     <div className="p-8 w-full bg-white shadow-lg rounded-lg mx-auto">
       <div className="mb-8 border-b pb-4 flex justify-start items-center">
-        {/* Adjusted: Header content to be left-aligned */}
         <div className="text-left">
           <h2 className="text-3xl font-bold text-gray-900 flex items-center justify-start">
             <FontAwesomeIcon icon={faUser} className="mr-3 text-blue-600" />
@@ -85,13 +222,20 @@ function RouteComponent() {
           </p>
         </div>
       </div>
-
-      {/* Personal Information */}
       <section className="mb-8">
-        <h3 className="text-2xl font-semibold text-gray-800 mb-4 flex items-center justify-start">
-          <FontAwesomeIcon icon={faUser} className="mr-2 text-gray-500" />
-          Personal Information
-        </h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-2xl font-semibold text-gray-800 flex items-center justify-start">
+            <FontAwesomeIcon icon={faUser} className="mr-2 text-gray-500" />
+            Personal Information
+          </h3>
+          <button
+            onClick={() => setIsEditModalOpen(true)}
+            className="text-blue-600 hover:text-blue-800 flex items-center text-lg"
+          >
+            <FontAwesomeIcon icon={faEdit} className="mr-2" />
+            Edit
+          </button>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-gray-50 p-4 rounded-md shadow-sm flex items-center justify-start text-left">
             <FontAwesomeIcon icon={faUser} className="text-blue-500 mr-3" />
@@ -132,14 +276,24 @@ function RouteComponent() {
           </div>
         </div>
       </section>
-
-      {/* Recruiter Information */}
       {user.role === 'recruiter' && recruiter && (
         <section className="mb-8">
-          <h3 className="text-2xl font-semibold text-gray-800 mb-4 flex items-center justify-start">
-            <FontAwesomeIcon icon={faBuilding} className="mr-2 text-gray-500" />
-            Recruiter Details
-          </h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-2xl font-semibold text-gray-800 flex items-center justify-start">
+              <FontAwesomeIcon
+                icon={faBuilding}
+                className="mr-2 text-gray-500"
+              />
+              Recruiter Details
+            </h3>
+            <button
+              onClick={() => setIsRecruiterEditModalOpen(true)}
+              className="text-blue-600 hover:text-blue-800 flex items-center text-lg"
+            >
+              <FontAwesomeIcon icon={faEdit} className="mr-2" />
+              Edit
+            </button>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-gray-50 p-4 rounded-md shadow-sm flex items-center justify-start text-left">
               <FontAwesomeIcon
@@ -176,17 +330,24 @@ function RouteComponent() {
           </div>
         </section>
       )}
-
-      {/* Seeker Information */}
       {user.role === 'seeker' && seeker && (
         <section>
-          <h3 className="text-2xl font-semibold text-gray-800 mb-4 flex items-center justify-start">
-            <FontAwesomeIcon
-              icon={faBriefcase}
-              className="mr-2 text-gray-500"
-            />
-            Seeker Details
-          </h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-2xl font-semibold text-gray-800 flex items-center justify-start">
+              <FontAwesomeIcon
+                icon={faBriefcase}
+                className="mr-2 text-gray-500"
+              />
+              Seeker Details
+            </h3>
+            <button
+              onClick={() => setIsSeekerEditModalOpen(true)}
+              className="text-blue-600 hover:text-blue-800 flex items-center text-lg"
+            >
+              <FontAwesomeIcon icon={faEdit} className="mr-2" />
+              Edit
+            </button>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-gray-50 p-4 rounded-md shadow-sm flex items-center justify-start text-left">
               <FontAwesomeIcon
@@ -209,14 +370,12 @@ function RouteComponent() {
                 <p className="text-sm text-gray-500">Resume</p>
                 <p className="text-lg font-medium text-gray-900">
                   {seeker.resumeUrl ? (
-                    <a
-                      href={seeker.resumeUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      onClick={() => handleViewResumeClick(seeker.resumeUrl)}
                       className="text-blue-600 hover:underline"
                     >
                       View Resume
-                    </a>
+                    </button>
                   ) : (
                     'Not uploaded'
                   )}
@@ -225,6 +384,67 @@ function RouteComponent() {
             </div>
           </div>
         </section>
+      )}
+
+      <UserProfileEditModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false)
+          resetUpdateStatus()
+        }}
+        initialData={{
+          firstName: userProfile.user.firstName,
+          lastName: userProfile.user.lastName,
+          email: userProfile.user.email,
+          phone: userProfile.user.phone,
+        }}
+        onSave={handleSaveProfile}
+        isLoading={isUpdating}
+        error={
+          isUpdateError ? updateError.message || 'Failed to update.' : null
+        }
+      />
+
+      {user.role === 'seeker' && seeker && (
+        <SeekerProfileEditModal
+          isOpen={isSeekerEditModalOpen}
+          onClose={() => {
+            setIsSeekerEditModalOpen(false)
+            resetUpdateSeekerStatus()
+          }}
+          initialData={{
+            employmentStatus: seeker.employmentStatus || 'unemployed',
+            resumeUrl: seeker.resumeUrl || null,
+          }}
+          onSave={handleSaveSeekerProfile}
+          isLoading={isUpdatingSeeker}
+          error={
+            isUpdateSeekerError
+              ? updateSeekerError.message || 'Failed to update.'
+              : null
+          }
+        />
+      )}
+
+      {user.role === 'recruiter' && recruiter && (
+        <RecruiterProfileEditModal
+          isOpen={isRecruiterEditModalOpen}
+          onClose={() => {
+            setIsRecruiterEditModalOpen(false)
+            resetUpdateRecruiterStatus()
+          }}
+          initialData={{
+            companyName: recruiter.companyName || null,
+            companyWebsite: recruiter.companyUrl || null,
+          }}
+          onSave={handleSaveRecruiterProfile}
+          isLoading={isUpdatingRecruiter}
+          error={
+            isUpdateRecruiterError
+              ? updateRecruiterError.message || 'Failed to update.'
+              : null
+          }
+        />
       )}
     </div>
   )

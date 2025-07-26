@@ -46,13 +46,13 @@ class AuthController {
         path: "/",
         httpOnly: true,
         secure: false,
-        sameSite: "lax",
+        sameSite: "strict",
       });
 
       console.log(user);
-      res.redirect("http://localhost:3000/redirect");
+      res.redirect((process.env.FE_HOST || '') + '/redirect');
     } catch (error) {
-      res.redirect("http://localhost:3000/");
+      res.redirect(process.env.FE_HOST || '');
     }
   };
 
@@ -97,7 +97,7 @@ class AuthController {
       res.clearCookie("wos-session");
       res.redirect(url);
     } catch (error: any) {
-      res.redirect("http://localhost:3000/");
+      res.redirect(process.env.FE_HOST || '');
     }
   };
 }

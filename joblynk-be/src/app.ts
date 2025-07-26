@@ -11,6 +11,7 @@ import authRouter from "./routes/auth.routes";
 import seekerRouter from "./routes/seeker.routes";
 import recruiterRouter from "./routes/recruiter.routes";
 import filesRouter from "./routes/files.routes";
+import applicationRouter from "./routes/application.routes";
 
 import { withAuth } from "./middleware/auth.middleware";
 
@@ -41,6 +42,7 @@ app.use("/api/user", withAuth, userRouter);
 app.use("/api/jobs", jobRouter);
 app.use("/api/seeker", withAuth, seekerRouter);
 app.use("/api/recruiter", withAuth, recruiterRouter);
+app.use("/api/application", withAuth, applicationRouter);
 app.use("/api/files", withAuth, filesRouter);
 
 app.get("/health", (req, res) => {

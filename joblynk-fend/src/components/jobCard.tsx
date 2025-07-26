@@ -74,9 +74,8 @@ const JobCard: React.FC<JobCardProps> = ({ job, isSelected, onClick }) => {
 
   return (
     <div
-      className={`p-4 border rounded-lg cursor-pointer transition-all hover:shadow-md ${
-        isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'
-      }`}
+      className={`p-4 border rounded-lg cursor-pointer transition-all hover:shadow-md ${isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'
+        }`}
       onClick={() => onClick(job)}
     >
       <div className="flex justify-between items-start mb-2">
@@ -89,7 +88,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, isSelected, onClick }) => {
           {formatJobType(job.jobType)}
         </span>
       </div>
-      <p className="text-gray-600 mb-2">Company Name</p>{' '}
+      <p className="text-gray-600 mb-2">{job.recruiter.companyName}</p>{' '}
       {/* You might want to add company field to JobItem */}
       <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
         <div className="flex items-center gap-1">

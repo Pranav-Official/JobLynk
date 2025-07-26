@@ -8,8 +8,16 @@ const router = Router();
 // Route to create a new job
 router.post("/", [withAuth, checkRole("recruiter")], jobController.createJob);
 
-// Route to update the status of a job by ID
-router.patch("/:jobId/status", jobController.updateJobStatus);
+router.delete("/:jobId", jobController.deleteJob);
+
+// Route to update a job by ID
+router.patch("/:jobId", jobController.updateJob);
+
+router.get(
+  "/recruiter",
+  [withAuth, checkRole("recruiter")],
+  jobController.getPaginatedRecruiterJobs,
+);
 
 router.get("/:jobId", jobController.getJobById);
 

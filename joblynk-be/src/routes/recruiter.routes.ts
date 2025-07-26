@@ -1,5 +1,6 @@
 import { Router } from "express";
 import recruiterController from "../controllers/recruiter.controller";
+import jobController from "../controllers/jobs.controller";
 import { checkRole } from "../middleware/role.middleware";
 
 const router = Router();

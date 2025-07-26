@@ -6,8 +6,51 @@ import { Op } from "sequelize";
 
 class JobService {
   async createJob(jobAttributes: JobAttributes): Promise<JobAttributes> {
-    const job = await db.Jobs.create(jobAttributes);
-    return job.get({ plain: true });
+    try {
+      console.log("Creating job... with attributes:", jobAttributes);
+      const job = await db.Jobs.create(jobAttributes);
+      if (!job) {
+        throw new Error("Failed to create job");
+      }
+      return job.get({ plain: true });
+    } catch (error) {
+      console.error("Error creating job:", error);
+      throw new Error("Failed to create job");
+    }
+  }
+
+  async updateJob(jobId: string, jobData: JobAttributes) {
+    try {
+      const job = await db.Jobs.findByPk(jobId);
+
+      if (!job) {
+        console.log("Job not found");
+        throw new Error("Job not found");
+      }
+
+      await job.update(jobData);
+      return job.get({ plain: true });
+    } catch (error) {
+      console.error("Error updating job:", error);
+      throw new Error("Failed to update job");
+    }
+  }
+
+  async deleteJob(jobId: string) {
+    try {
+      const job = await db.Jobs.findByPk(jobId);
+
+      if (!job) {
+        console.log("Job not found,");
+        throw new Error("Job not found");
+      }
+
+      await job.update({ archived: true });
+      return job.get({ plain: true });
+    } catch (error) {
+      console.error("Error deleting job:", error);
+      throw new Error("Failed to delete job");
+    }
   }
 
   async updateJobStatus(
@@ -17,6 +60,7 @@ class JobService {
     const job = await db.Jobs.findByPk(jobId);
 
     if (!job) {
+      console.log("Job not found, jobs sdervice 46");
       throw new Error("Job not found");
     }
 
@@ -39,12 +83,14 @@ class JobService {
     search?: string,
     location?: string,
     jobType?: string,
+    recruiterId?: string,
   ): Promise<{
     jobs: JobAttributes[];
     total: number;
     currentPage: number;
     totalPages: number;
   }> {
+    console.log("Fetching paginated jobs... for recruiterId:", recruiterId);
     const offset = (page - 1) * pageSize;
     const where: any = {};
 
@@ -63,7 +109,13 @@ class JobService {
       where.jobType = { [Op.eq]: jobType };
     }
 
-    where.status = { [Op.eq]: JobStatus.ACTIVE };
+    if (recruiterId) {
+      where.recruiterId = { [Op.eq]: recruiterId };
+    } else {
+      where.status = { [Op.eq]: JobStatus.ACTIVE };
+    }
+
+    where.archived = { [Op.eq]: false };
 
     const { rows, count } = await db.Jobs.findAndCountAll({
       where,
@@ -73,6 +125,13 @@ class JobService {
       attributes: {
         exclude: ["descriptionMarkdown"],
       },
+      include: [
+        {
+          model: db.Recruiter,
+          as: "recruiter", // Ensure this matches the alias used in associations
+          attributes: ["id", "companyName", "companyUrl"], // Include only necessary fields
+        },
+      ],
     });
 
     const jobs = rows.map((row) => row.get({ plain: true }));
@@ -87,13 +146,21 @@ class JobService {
   }
 
   async getJobById(jobId: string): Promise<JobAttributes> {
-    const job = await db.Jobs.findByPk(jobId);
+    const job = await db.Jobs.findByPk(jobId, {
+      include: [
+        {
+          model: db.Recruiter,
+          as: "recruiter",
+        },
+      ],
+    });
 
     if (!job) {
+      console.log("Job not found, jobs sdervice 126");
       throw new Error("Job not found");
     }
 
-    return job.get({ plain: true });
+    return job.toJSON();
   }
 }
 

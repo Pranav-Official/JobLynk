@@ -23,7 +23,7 @@ interface PersonalFormData {
 }
 
 function RouteComponent() {
-  const { firstName, lastName, email } = useUserStore()
+  const { firstName, lastName, email, setUserData } = useUserStore()
   const navContext = useContext(OnboardingNavigationContext)
   const {
     register,
@@ -49,6 +49,14 @@ function RouteComponent() {
       createUser(data.firstName, data.lastName, data.email, data.phone),
     onSuccess: (data) => {
       console.log('User created successfully:', data)
+      setUserData(
+        data.firstName,
+        data.lastName,
+        data.email,
+        "", // role
+        "", // recruiterId
+        "", // seekerId
+      )
       navContext?.handleNextStep()
     },
     onError: (error) => {
@@ -200,11 +208,10 @@ function RouteComponent() {
         <button
           disabled={navContext?.currentStep.hidePrevious || isCreatingUser}
           onClick={navContext?.handlePrevStep}
-          className={`px-4 py-2 rounded-md transition-colors duration-200 ${
-            navContext?.currentStep.hidePrevious || isCreatingUser
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-blue-500 text-white hover:bg-blue-600'
-          }`}
+          className={`px-4 py-2 rounded-md transition-colors duration-200 ${navContext?.currentStep.hidePrevious || isCreatingUser
+            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            : 'bg-blue-500 text-white hover:bg-blue-600'
+            }`}
         >
           <FontAwesomeIcon icon={faChevronLeft} className="mr-2" />
           Previous
@@ -213,11 +220,10 @@ function RouteComponent() {
         <button
           onClick={handleSubmit(onValidSubmit)}
           disabled={isNextButtonDisabled}
-          className={`px-4 py-2 rounded-md transition-colors duration-200 ${
-            isNextButtonDisabled
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-blue-500 text-white hover:bg-blue-600'
-          }`}
+          className={`px-4 py-2 rounded-md transition-colors duration-200 ${isNextButtonDisabled
+            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            : 'bg-blue-500 text-white hover:bg-blue-600'
+            }`}
         >
           {isCreatingUser ? 'Saving...' : 'Next'}
           <FontAwesomeIcon icon={faChevronRight} className="ml-2" />

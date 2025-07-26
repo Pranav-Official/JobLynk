@@ -21,6 +21,7 @@ import { Route as OnboardingExitRouteImport } from './routes/onboarding/exit'
 import { Route as OnboardingEmploymentRouteImport } from './routes/onboarding/employment'
 import { Route as OnboardingCompanyRouteImport } from './routes/onboarding/company'
 import { Route as DashboardProfileRouteImport } from './routes/dashboard/profile'
+import { Route as DashboardMyApplicationsRouteImport } from './routes/dashboard/myApplications'
 import { Route as DashboardJobsRouteImport } from './routes/dashboard/jobs'
 import { Route as DashboardApplicationsRouteImport } from './routes/dashboard/applications'
 
@@ -84,6 +85,11 @@ const DashboardProfileRoute = DashboardProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardMyApplicationsRoute = DashboardMyApplicationsRouteImport.update({
+  id: '/myApplications',
+  path: '/myApplications',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
 const DashboardJobsRoute = DashboardJobsRouteImport.update({
   id: '/jobs',
   path: '/jobs',
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/redirect': typeof RedirectRoute
   '/dashboard/applications': typeof DashboardApplicationsRoute
   '/dashboard/jobs': typeof DashboardJobsRoute
+  '/dashboard/myApplications': typeof DashboardMyApplicationsRoute
   '/dashboard/profile': typeof DashboardProfileRoute
   '/onboarding/company': typeof OnboardingCompanyRoute
   '/onboarding/employment': typeof OnboardingEmploymentRoute
@@ -119,6 +126,7 @@ export interface FileRoutesByTo {
   '/redirect': typeof RedirectRoute
   '/dashboard/applications': typeof DashboardApplicationsRoute
   '/dashboard/jobs': typeof DashboardJobsRoute
+  '/dashboard/myApplications': typeof DashboardMyApplicationsRoute
   '/dashboard/profile': typeof DashboardProfileRoute
   '/onboarding/company': typeof OnboardingCompanyRoute
   '/onboarding/employment': typeof OnboardingEmploymentRoute
@@ -136,6 +144,7 @@ export interface FileRoutesById {
   '/redirect': typeof RedirectRoute
   '/dashboard/applications': typeof DashboardApplicationsRoute
   '/dashboard/jobs': typeof DashboardJobsRoute
+  '/dashboard/myApplications': typeof DashboardMyApplicationsRoute
   '/dashboard/profile': typeof DashboardProfileRoute
   '/onboarding/company': typeof OnboardingCompanyRoute
   '/onboarding/employment': typeof OnboardingEmploymentRoute
@@ -154,6 +163,7 @@ export interface FileRouteTypes {
     | '/redirect'
     | '/dashboard/applications'
     | '/dashboard/jobs'
+    | '/dashboard/myApplications'
     | '/dashboard/profile'
     | '/onboarding/company'
     | '/onboarding/employment'
@@ -170,6 +180,7 @@ export interface FileRouteTypes {
     | '/redirect'
     | '/dashboard/applications'
     | '/dashboard/jobs'
+    | '/dashboard/myApplications'
     | '/dashboard/profile'
     | '/onboarding/company'
     | '/onboarding/employment'
@@ -186,6 +197,7 @@ export interface FileRouteTypes {
     | '/redirect'
     | '/dashboard/applications'
     | '/dashboard/jobs'
+    | '/dashboard/myApplications'
     | '/dashboard/profile'
     | '/onboarding/company'
     | '/onboarding/employment'
@@ -289,6 +301,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardProfileRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/myApplications': {
+      id: '/dashboard/myApplications'
+      path: '/myApplications'
+      fullPath: '/dashboard/myApplications'
+      preLoaderRoute: typeof DashboardMyApplicationsRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/dashboard/jobs': {
       id: '/dashboard/jobs'
       path: '/jobs'
@@ -309,12 +328,14 @@ declare module '@tanstack/react-router' {
 interface DashboardRouteRouteChildren {
   DashboardApplicationsRoute: typeof DashboardApplicationsRoute
   DashboardJobsRoute: typeof DashboardJobsRoute
+  DashboardMyApplicationsRoute: typeof DashboardMyApplicationsRoute
   DashboardProfileRoute: typeof DashboardProfileRoute
 }
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardApplicationsRoute: DashboardApplicationsRoute,
   DashboardJobsRoute: DashboardJobsRoute,
+  DashboardMyApplicationsRoute: DashboardMyApplicationsRoute,
   DashboardProfileRoute: DashboardProfileRoute,
 }
 

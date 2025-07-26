@@ -10,50 +10,67 @@ export async function withAuth(
   req: Request,
   res: Response,
   next: NextFunction,
-): Promise<void> {
+): Promise<any> {
+  console.log("Entering withAuth middleware");
+
   const session = workos.userManagement.loadSealedSession({
     sessionData: req.cookies["wos-session"],
     cookiePassword: process.env.WORKOS_COOKIE_PASSWORD || "",
   });
+  console.log("Sealed session loaded.");
 
   const authResult = await session.authenticate();
+  console.log("Authentication attempt result:", authResult);
 
   if (authResult.authenticated) {
     const userId = authResult.user.id;
     req.userId = userId;
+    console.log("User authenticated. User ID:", userId);
     return next();
   }
 
-  // If the cookie is missing, redirect to login
   if (
     !authResult.authenticated &&
     authResult.reason === "no_session_cookie_provided"
   ) {
-    return res.redirect("http://localhost:3000/");
+    console.log("No session cookie provided. Clearing cookie and sending 401.");
+    res.clearCookie("wos-session");
+    return res.status(401).json({
+      message: "Unauthorized",
+      redirectTo: process.env.FE_HOST || '',
+    });
   }
 
-  // If the session is invalid, attempt to refresh
   try {
+    console.log("Session invalid, attempting to refresh.");
     const refreshResult = await session.refresh();
+    console.log("Refresh attempt result:", refreshResult);
 
     if (!refreshResult.authenticated) {
-      return res.redirect("http://localhost:3000/");
+      console.log("Refresh failed. Clearing cookie and sending 401.");
+      res.clearCookie("wos-session");
+      return res.status(401).json({
+        message: "Unauthorized",
+        redirectTo: process.env.FE_HOST || '',
+      });
     }
 
-    // update the cookie
     res.cookie("wos-session", refreshResult.sealedSession, {
       path: "/",
       httpOnly: true,
-      secure: true,
-      sameSite: "lax",
+      secure: false,
+      sameSite: "strict",
     });
-
-    // Redirect to the same route to ensure the updated cookie is used
-    return res.redirect(req.originalUrl);
+    const userId = refreshResult.user.id;
+    req.userId = userId;
+    console.log("Cookie updated and user ID set:", userId);
+    return next();
   } catch (e) {
-    // Failed to refresh access token, redirect user to login page
-    // after deleting the cookie
+    console.error("Failed to refresh access token. Error:", e);
     res.clearCookie("wos-session");
-    res.redirect("http://localhost:3000/");
+    return res.status(401).json({
+      message: "Unauthorized",
+      redirectTo: process.env.FE_HOST || '',
+    });
   }
 }
