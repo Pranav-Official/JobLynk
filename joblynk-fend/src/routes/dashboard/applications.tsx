@@ -17,12 +17,13 @@ import {
   faSortDown,
   faSortUp,
 } from '@fortawesome/free-solid-svg-icons'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { RecruiterApplicationItem } from '@/constants/types/application'
 import { ApplicationStatus } from '@/constants/types/application'
 import { getRecruiterApplications } from '@/services/application'
 import { Modal } from '@/components/modal'
 import { EditApplicationStatusModal } from '@/components/editApplicationStatusModal'
+import { getSecretURL } from '@/services/file'
 
 export const Route = createFileRoute('/dashboard/applications')({
   component: RouteComponent,
@@ -41,6 +42,13 @@ function RouteComponent() {
   } = useQuery({
     queryKey: ['recruiter/applications'],
     queryFn: () => getRecruiterApplications(),
+  })
+
+  const resumeUrlMutation = useMutation({
+    mutationFn: (fileKey: string) => getSecretURL(fileKey),
+    onSuccess: (url: string) => {
+      window.open(url, '_blank')
+    },
   })
 
   const [globalFilter, setGlobalFilter] = useState('')
@@ -67,6 +75,12 @@ function RouteComponent() {
 
   const handleStatusSuccessfullyUpdated = () => {
     queryClient.invalidateQueries({ queryKey: ['recruiter/applications'] })
+  }
+
+  const handleViewResumeClick = (application: RecruiterApplicationItem) => {
+    if (application.seeker.resumeUrl) {
+      resumeUrlMutation.mutate(application.seeker.resumeUrl)
+    }
   }
 
   const columns = useMemo(
@@ -111,15 +125,13 @@ function RouteComponent() {
           const resumeUrl = info.getValue()
           if (resumeUrl) {
             return (
-              <a
-                href={resumeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:underline flex items-center gap-1"
+              <button
+                onClick={() => handleViewResumeClick(info.row.original)}
+                className="text-blue-600 hover:underline flex items-center gap-1 cursor-pointer"
               >
                 <FontAwesomeIcon icon={faFileAlt} />
                 View Resume
-              </a>
+              </button>
             )
           }
           return 'N/A'

@@ -20,3 +20,11 @@ export const uploadFileToS3 = async (
     },
   })
 }
+
+export const getSecretURL = async (key: string): Promise<string> => {
+  const presignedRrl = await api.post('/files/secure-resume-url', {
+    key,
+  })
+
+  return presignedRrl.data.url
+}

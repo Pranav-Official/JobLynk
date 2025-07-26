@@ -16,8 +16,7 @@ import {
   faSortDown,
   faSortUp,
 } from '@fortawesome/free-solid-svg-icons'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import type { ApplicationItem } from '@/constants/types/application'
+import { useQuery } from '@tanstack/react-query'
 import { getSeekerApplications } from '@/services/application'
 import { ApplicationStatus } from '@/constants/types/application' // Assuming you have this enum
 
@@ -28,7 +27,6 @@ export const Route = createFileRoute('/dashboard/myApplications')({
 })
 
 function RouteComponent() {
-  const queryClient = useQueryClient()
   const {
     data: applicationResponse,
     isError,

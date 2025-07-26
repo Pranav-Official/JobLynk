@@ -12,7 +12,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faBriefcase,
   faEdit,
-  faEye,
   faPlus,
   faSort,
   faSortDown,
@@ -20,6 +19,7 @@ import {
   faTrash,
 } from '@fortawesome/free-solid-svg-icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import toast from 'react-hot-toast'
 import type { JobItem } from '@/constants/types/job'
 import { CreateJobForm } from '@/components/createJobForm'
 import { Modal } from '@/components/modal'
@@ -30,8 +30,6 @@ import {
   editJob,
   getJobsForRecruiter,
 } from '@/services/jobs'
-import useUserStore from '@/stores/userStore'
-import toast from 'react-hot-toast'
 import ConfirmationPopup from '@/components/confirmationPopup'
 
 export const Route = createFileRoute('/dashboard/jobs')({

@@ -3,6 +3,7 @@ import { RouterProvider } from '@tanstack/react-router'
 import { Toaster } from 'react-hot-toast'
 import { router } from './router'
 import useStore from './stores/authStore'
+import useUserStore from './stores/userStore'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -15,8 +16,10 @@ const queryClient = new QueryClient({
 
 const App = () => {
   const isLoggedIn = useStore((state) => state.isLoggedIn)
+  const { role } = useUserStore()
   const auth = {
     isLoggedIn,
+    role,
   }
 
   return (

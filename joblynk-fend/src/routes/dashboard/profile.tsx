@@ -21,7 +21,7 @@ import { RecruiterProfileEditModal } from '@/components/recruiterProfileEditModa
 import { getUserProfile, updateUserProfile } from '@/services/user'
 import { updateSeekerEmployment, updateSeekerResume } from '@/services/seeker'
 import { updateRecruiterCompany } from '@/services/recruiter' // New import
-import { portPresignedURL, uploadFileToS3 } from '@/services/file'
+import { getSecretURL, portPresignedURL, uploadFileToS3 } from '@/services/file'
 
 export const Route = createFileRoute('/dashboard/profile')({
   component: RouteComponent,
@@ -42,6 +42,13 @@ function RouteComponent() {
   } = useQuery({
     queryKey: ['userDetails'],
     queryFn: () => getUserProfile(),
+  })
+
+  const resumeUrlMutation = useMutation({
+    mutationFn: (fileKey: string) => getSecretURL(fileKey),
+    onSuccess: (url: string) => {
+      window.open(url, '_blank')
+    },
   })
 
   const {
@@ -152,6 +159,12 @@ function RouteComponent() {
     companyWebsite: string
   }) => {
     updateRecruiterDetails(updatedData)
+  }
+
+  const handleViewResumeClick = (urlKey: string) => {
+    if (urlKey) {
+      resumeUrlMutation.mutate(urlKey)
+    }
   }
 
   if (isDataLoading) {
@@ -357,14 +370,12 @@ function RouteComponent() {
                 <p className="text-sm text-gray-500">Resume</p>
                 <p className="text-lg font-medium text-gray-900">
                   {seeker.resumeUrl ? (
-                    <a
-                      href={seeker.resumeUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      onClick={() => handleViewResumeClick(seeker.resumeUrl)}
                       className="text-blue-600 hover:underline"
                     >
                       View Resume
-                    </a>
+                    </button>
                   ) : (
                     'Not uploaded'
                   )}
