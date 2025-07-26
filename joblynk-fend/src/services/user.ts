@@ -1,5 +1,5 @@
 import type { ApiResponse } from '@/constants/types/api'
-import type { UserProfile } from '@/constants/types/user'
+import type { EditUser, UserProfile } from '@/constants/types/user'
 import {
   USER_DETAILS_ENDPOINT,
   USER_ROLE_ENDPOINT,
@@ -30,5 +30,10 @@ export const updateUserRole = async (role: string): Promise<any> => {
   const apiResponse = await api.post(`${USER_ROLE_ENDPOINT}`, {
     role,
   })
+  return apiResponse.data
+}
+
+export const updateUserProfile = async (userData: EditUser): Promise<any> => {
+  const apiResponse = await api.put(`${USER_DETAILS_ENDPOINT}`, userData)
   return apiResponse.data
 }
