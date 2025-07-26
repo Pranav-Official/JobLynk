@@ -8,6 +8,8 @@ const router = Router();
 // Route to create a new job
 router.post("/", [withAuth, checkRole("recruiter")], jobController.createJob);
 
+router.delete("/:jobId", jobController.deleteJob);
+
 // Route to update a job by ID
 router.patch("/:jobId", jobController.updateJob);
 

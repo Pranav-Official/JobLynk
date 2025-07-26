@@ -52,10 +52,17 @@ export const createJob = async (
 
 export const editJob = async (
   jobId: string,
-  jobData: JobItem, // Now accepts a single JobItem object
+  jobData: JobItem,
 ): Promise<ApiResponse<JobItem>> => {
-  console.log('hitting createJob POST with jobData:', jobData)
   const apiResponse = await api.patch(`${JOBS_LIST_ENDPOINT}/${jobId}`, jobData)
+  console.log('response:', apiResponse.data)
+  return apiResponse.data
+}
+
+export const deleteJob = async (
+  jobId: string,
+): Promise<ApiResponse<JobItem>> => {
+  const apiResponse = await api.delete(`${JOBS_LIST_ENDPOINT}/${jobId}`)
   console.log('response:', apiResponse.data)
   return apiResponse.data
 }

@@ -19,12 +19,14 @@ import type { AxiosError } from 'axios'
 import { JobType } from '@/constants/types/job'
 import { getDetailedJob } from '@/services/jobs'
 import { createApplication } from '@/services/application'
+import useUserStore from '@/stores/userStore'
 
 interface JobDetailedViewProps {
   job: JobItem | null
 }
 
 const JobDetailedView: React.FC<JobDetailedViewProps> = ({ job }) => {
+  const { role } = useUserStore()
   const [showApplyConfirmation, setShowApplyConfirmation] = useState(false) // State for popup
   const {
     mutate: applyJobMutation,
@@ -269,9 +271,9 @@ const JobDetailedView: React.FC<JobDetailedViewProps> = ({ job }) => {
         {/* Apply Button */}
         <button
           onClick={handleApplyClick}
-          disabled={detailedJob.status !== 'active'} // Ensure status is 'active'
+          disabled={detailedJob.status !== 'active' || role === 'recruiter'}
           className={`w-full py-3 px-6 rounded-lg font-medium transition-colors mb-8 flex items-center justify-center gap-2 ${
-            detailedJob.status === 'active'
+            detailedJob.status === 'active' && role === 'seeker'
               ? 'bg-blue-600 text-white hover:bg-blue-700'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}

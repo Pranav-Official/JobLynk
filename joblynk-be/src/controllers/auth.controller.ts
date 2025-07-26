@@ -46,7 +46,7 @@ class AuthController {
         path: "/",
         httpOnly: true,
         secure: false,
-        sameSite: "lax",
+        sameSite: "strict",
       });
 
       console.log(user);

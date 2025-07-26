@@ -24,7 +24,7 @@ class JobService {
       const job = await db.Jobs.findByPk(jobId);
 
       if (!job) {
-        console.log("Job not found, jobs sdervice 27");
+        console.log("Job not found");
         throw new Error("Job not found");
       }
 
@@ -33,6 +33,23 @@ class JobService {
     } catch (error) {
       console.error("Error updating job:", error);
       throw new Error("Failed to update job");
+    }
+  }
+
+  async deleteJob(jobId: string) {
+    try {
+      const job = await db.Jobs.findByPk(jobId);
+
+      if (!job) {
+        console.log("Job not found,");
+        throw new Error("Job not found");
+      }
+
+      await job.update({ archived: true });
+      return job.get({ plain: true });
+    } catch (error) {
+      console.error("Error deleting job:", error);
+      throw new Error("Failed to delete job");
     }
   }
 
@@ -97,6 +114,8 @@ class JobService {
     } else {
       where.status = { [Op.eq]: JobStatus.ACTIVE };
     }
+
+    where.archived = { [Op.eq]: false };
 
     const { rows, count } = await db.Jobs.findAndCountAll({
       where,

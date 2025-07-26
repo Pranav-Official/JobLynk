@@ -32,7 +32,6 @@ export default (sequelize: Sequelize, dataTypes: typeof DataTypes) => {
           key: "id",
         },
         onUpdate: "CASCADE",
-        onDelete: "CASCADE",
       },
       seekerId: {
         type: dataTypes.STRING(36),

@@ -190,6 +190,17 @@ class ApplicationService {
 
     return application?.get({ plain: true }) || null;
   }
+
+  async rejectApplicationsByJobId(jobId: string): Promise<void> {
+    await db.Application.update(
+      { status: "Rejected" },
+      {
+        where: {
+          jobId,
+        },
+      },
+    );
+  }
 }
 
 export default new ApplicationService();

@@ -19,9 +19,10 @@ export interface JobAttributes {
   expiresAt?: Date | null;
   easyApply: boolean;
   skills?: string[] | null;
+  archived: boolean;
 }
 
-export class Job extends Model<JobAttributes> { }
+export class Job extends Model<JobAttributes> {}
 
 export default (sequelize: Sequelize, dataTypes: typeof DataTypes) => {
   Job.init(
@@ -95,6 +96,11 @@ export default (sequelize: Sequelize, dataTypes: typeof DataTypes) => {
         type: dataTypes.ARRAY(dataTypes.STRING),
         allowNull: true,
         defaultValue: [],
+      },
+      archived: {
+        type: dataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
       },
     },
     {

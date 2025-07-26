@@ -5,6 +5,7 @@ import recruiterService from "../services/recruiter.service";
 import userService from "../services/user.service";
 import { JobStatus } from "../constants/enums";
 import ApiError from "../utils/ApiError";
+import applicationService from "../services/application.service";
 
 class JobController {
   public createJob = async (req: Request, res: Response): Promise<void> => {
@@ -197,6 +198,36 @@ class JobController {
       res.status(StatusCodes.OK).json({
         data: job,
         message: "Job retrieved successfully",
+        status: "success",
+      });
+    } catch (error: any) {
+      if (error instanceof ApiError) {
+        res.status(error.statusCode).json({ message: error.message });
+      } else {
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+          message:
+            error.message || getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR),
+        });
+      }
+    }
+  };
+
+  public deleteJob = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const jobId = req.params.jobId as string;
+
+      const job = await jobService.deleteJob(jobId);
+
+      if (!job) {
+        console.log("Job not found");
+        throw new ApiError(StatusCodes.NOT_FOUND, "Job not found");
+      }
+
+      await applicationService.rejectApplicationsByJobId(jobId);
+
+      res.status(StatusCodes.OK).json({
+        data: job,
+        message: "Job deleted successfully",
         status: "success",
       });
     } catch (error: any) {

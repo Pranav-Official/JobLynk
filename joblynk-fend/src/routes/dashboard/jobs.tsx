@@ -17,14 +17,22 @@ import {
   faSort,
   faSortDown,
   faSortUp,
+  faTrash,
 } from '@fortawesome/free-solid-svg-icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { JobItem } from '@/constants/types/job'
 import { CreateJobForm } from '@/components/createJobForm'
 import { Modal } from '@/components/modal'
 import { JobStatus, JobType } from '@/constants/enums'
-import { createJob, editJob, getJobsForRecruiter } from '@/services/jobs'
+import {
+  createJob,
+  deleteJob,
+  editJob,
+  getJobsForRecruiter,
+} from '@/services/jobs'
 import useUserStore from '@/stores/userStore'
+import toast from 'react-hot-toast'
+import ConfirmationPopup from '@/components/confirmationPopup'
 
 export const Route = createFileRoute('/dashboard/jobs')({
   component: RouteComponent,
@@ -32,6 +40,9 @@ export const Route = createFileRoute('/dashboard/jobs')({
 
 function RouteComponent() {
   const queryClient = useQueryClient()
+  const [isDeleteConfirmModalOpen, setIsDeleteConfirmModalOpen] =
+    useState(false)
+  const [jobIdForDelete, setJobIdForDelete] = useState<string | null>(null)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [editingJob, setEditingJob] = useState<JobItem | null>(null)
 
@@ -45,9 +56,23 @@ function RouteComponent() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recuiter/jobs'] })
       setIsCreateModalOpen(false)
+      toast.success('Job created successfully')
     },
     onError: (error) => {
       console.error('Error creating job:', error)
+      toast.error('Failed to create job')
+    },
+  })
+
+  const deleteJobMutation = useMutation({
+    mutationFn: deleteJob,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['recuiter/jobs'] })
+      toast.success('Job deleted successfully')
+    },
+    onError: (error) => {
+      console.error('Error deleting job:', error)
+      toast.error('Failed to delete job')
     },
   })
 
@@ -58,15 +83,24 @@ function RouteComponent() {
       queryClient.invalidateQueries({ queryKey: ['recuiter/jobs'] })
       setIsCreateModalOpen(false)
       setEditingJob(null)
+      toast.success('Job edited successfully')
     },
     onError: (error) => {
       console.error('Error editing job:', error)
+      toast.error('Failed to edit job')
     },
   })
 
-  const handleView = (jobId: string | undefined) => {
-    console.log(`View job with ID: ${jobId}`)
-    alert(`Viewing job: ${jobId}`)
+  const showDeleteConfirmation = (jobId: string) => {
+    setJobIdForDelete(jobId)
+    setIsDeleteConfirmModalOpen(true)
+  }
+
+  const handleDelete = () => {
+    console.log(`Deleting job with ID: ${jobIdForDelete}`)
+    if (!jobIdForDelete) return
+    deleteJobMutation.mutate(jobIdForDelete)
+    setIsDeleteConfirmModalOpen(false)
   }
 
   const handleEdit = (job: JobItem) => {
@@ -189,11 +223,11 @@ function RouteComponent() {
         cell: (info: any) => (
           <div className="flex items-center gap-2">
             <button
-              onClick={() => handleView(info.row.original.id)}
-              className="p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"
+              onClick={() => showDeleteConfirmation(info.row.original.id)}
+              className="p-2 rounded-full bg-red-200 text-red-600 hover:bg-red-200 transition-colors"
               title="View Job"
             >
-              <FontAwesomeIcon icon={faEye} />
+              <FontAwesomeIcon icon={faTrash} />
             </button>
             <button
               onClick={() => handleEdit(info.row.original as JobItem)}
@@ -395,6 +429,14 @@ function RouteComponent() {
           isEditMode={!!editingJob}
         />
       </Modal>
+      {isDeleteConfirmModalOpen && (
+        <ConfirmationPopup
+          title="Delete Job?"
+          message="Are you sure you want to delete this job?"
+          onConfirm={handleDelete}
+          onCancel={() => setIsDeleteConfirmModalOpen(false)}
+        />
+      )}
     </div>
   )
 }

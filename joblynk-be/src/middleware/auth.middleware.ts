@@ -44,8 +44,8 @@ export async function withAuth(
     res.cookie("wos-session", refreshResult.sealedSession, {
       path: "/",
       httpOnly: true,
-      secure: true,
-      sameSite: "lax",
+      secure: false,
+      sameSite: "strict",
     });
     const userId = refreshResult.user.id;
     req.userId = userId;

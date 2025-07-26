@@ -1,5 +1,7 @@
 import { useNavigate, useRouterState } from '@tanstack/react-router'
 import { useState } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 import {
   AUTH_LOGIN_ENDPOINT,
   AUTH_LOGOUT_ENDPOINT,
@@ -9,7 +11,7 @@ import useStore from '../stores/authStore'
 
 export default function NavBar() {
   const navigate = useNavigate()
-  const routerState = useRouterState() // Get the current router state
+  const routerState = useRouterState()
   const loginUrl = getFullApiUrl(AUTH_LOGIN_ENDPOINT)
   const logoutUrl = getFullApiUrl(AUTH_LOGOUT_ENDPOINT)
   const [isLoading, setIsLoading] = useState(false)
@@ -51,7 +53,7 @@ export default function NavBar() {
             key={item.name}
             onClick={() => navigate({ to: item.path })}
             className={`cursor-pointer px-3 py-1 rounded-md transition duration-300 ${
-              routerState.location.pathname.startsWith(item.path) // Changed this line
+              routerState.location.pathname.startsWith(item.path)
                 ? 'bg-blue-200 text-black'
                 : 'hover:bg-gray-200'
             }`}
@@ -60,11 +62,18 @@ export default function NavBar() {
           </div>
         ))}
         <button
-          className="bg-blue-600 text-white p-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300"
+          className="bg-blue-600 text-white p-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 flex items-center justify-center"
           onClick={handleAuthClick}
           disabled={isLoading}
         >
-          {isLoggedIn ? 'Logout' : 'Login'}
+          {isLoading ? (
+            <div className="flex items-center">
+              <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
+              {isLoggedIn ? 'Logging Out...' : 'Logging In...'}
+            </div>
+          ) : (
+            <span>{isLoggedIn ? 'Logout' : 'Login'}</span>
+          )}
         </button>
       </div>
     </header>
